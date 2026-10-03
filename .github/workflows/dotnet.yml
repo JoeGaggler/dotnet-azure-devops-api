@@ -1,0 +1,56 @@
+name: dotnet
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    permissions:
+      contents: read
+      id-token: write  # enable GitHub OIDC token issuance for this job
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: NuGet login
+      uses: NuGet/login@v1.2.0
+      id: login
+      if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+      with:
+        user: ${{ secrets.NUGET_USER }}
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10.x
+    - name: Version (release)
+      run: |
+        OLD=$(yq ".Project.PropertyGroup[0].Version" -p xml -o xml src/nuget/Pingmint.AzureDevOps.csproj)
+        NEW="$OLD.${COUNTER}" yq ".Project.PropertyGroup[0].Version = env(NEW)" -p xml -o xml -i src/nuget/Pingmint.AzureDevOps.csproj
+        cat src/nuget/Pingmint.AzureDevOps.csproj
+      env:
+        COUNTER: ${{ github.run_number }}
+      if: github.ref == 'refs/heads/main'
+    - name: Version (pre-release)
+      run: |
+        OLD=$(yq ".Project.PropertyGroup[0].Version" -p xml -o xml src/nuget/Pingmint.AzureDevOps.csproj)
+        NEW="$OLD.${COUNTER}-alpha" yq ".Project.PropertyGroup[0].Version = env(NEW)" -p xml -o xml -i src/nuget/Pingmint.AzureDevOps.csproj
+        cat src/nuget/Pingmint.AzureDevOps.csproj
+      env:
+        COUNTER: ${{ github.run_number }}
+      if: github.ref != 'refs/heads/main'
+    - name: Restore dependencies
+      run: dotnet restore src/nuget
+    - name: Build
+      run: dotnet build --configuration Release --no-restore src/nuget
+    - name: Test
+      run: dotnet test --configuration Release --no-build --no-restore --verbosity normal src/nuget
+    - name: Pack
+      run: dotnet pack --configuration Release --no-build --no-restore --verbosity normal --output ./nupkg src/nuget
+    - name: Push
+      run: dotnet nuget push ./nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --skip-duplicate --api-key $NUGET_API_KEY
+      env:
+        NUGET_API_KEY: ${{steps.login.outputs.NUGET_API_KEY}}
+      if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
