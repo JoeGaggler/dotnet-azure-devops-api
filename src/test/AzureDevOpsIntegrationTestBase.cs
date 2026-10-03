@@ -7,7 +7,7 @@ namespace Pingmint.AzureDevOps.Tests;
 public abstract class AzureDevOpsIntegrationTestBase
 {
     private const string AzureDevOpsScope = "499b84ac-1321-427f-aa17-267ca6975798/.default";
-    private static readonly InteractiveBrowserCredential Credential = new();
+    private static readonly AzureCliCredential Credential = new();
     private static readonly Lazy<Task<AccessToken>> AccessTokenTask = new(
         () => Credential.GetTokenAsync(new TokenRequestContext([AzureDevOpsScope])).AsTask());
 
