@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/nuget/">
+    <Project Path="nuget/Pingmint.AzureDevOps.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/Pingmint.AzureDevOps.Tests.csproj" />
+  </Folder>
+</Solution>

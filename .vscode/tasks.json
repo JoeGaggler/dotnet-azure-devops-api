@@ -1,0 +1,64 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "dotnet: restore tools",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "tool",
+        "restore"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/src"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "dotnet: generate Azure DevOps API serializer",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "jsoncodegen",
+        "--input",
+        "${workspaceFolder}/src/nuget/APISerializer.txt",
+        "--output",
+        "${workspaceFolder}/src/nuget/APISerializer.g.cs",
+        "--class",
+        "Pingmint.AzureDevOps.APISerializer",
+        "--access",
+        "public",
+        "--make"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/src"
+      },
+      "dependsOrder": "sequence",
+      "dependsOn": "dotnet: restore tools",
+      "problemMatcher": []
+    },
+    {
+      "label": "dotnet: build solution",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/Pingmint.AzureDevOps.slnx",
+        "--configuration",
+        "Release",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/src"
+      },
+      "dependsOrder": "sequence",
+      "dependsOn": "dotnet: generate Azure DevOps API serializer",
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}

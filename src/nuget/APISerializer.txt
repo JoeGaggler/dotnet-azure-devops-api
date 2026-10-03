@@ -1,0 +1,5 @@
+Pingmint.AzureDevOps.GitPullRequestsResponse
+- "value" => Value : [Pingmint.AzureDevOps.GitPullRequest]
+
+Pingmint.AzureDevOps.GitPullRequest
+- "pullRequestId" => PullRequestId : int
