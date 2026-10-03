@@ -190,7 +190,9 @@ Use the selected operation URL, not a nearby Microsoft Learn page. In catalog re
 
 ### 7. Add Focused Coverage
 
-Add or extend an integration test under `src/test/` that:
+Classify each operation by its effect on Azure DevOps resources before writing tests. Only read-only operations may be invoked against the configured Azure DevOps instance. Do not invoke other operations that create, update, or delete resources, including creating branches, pushing commits, or editing work items. This restriction also applies to prerequisite and setup calls; never mutate resources just to obtain test data.
+
+For read-only operations, add or extend an integration test under `src/test/` that:
 
 - derives from `AzureDevOpsIntegrationTestBase`
 - has `[TestCategory("Integration")]`
@@ -202,11 +204,13 @@ Add or extend an integration test under `src/test/` that:
 - asserts `DeserializationStatus.Success`
 - compares deserialized values with the raw JSON response for scalar, nested object, and collection fields
 
+For every other resource-changing operation, test as much as possible without sending the operation: verify the factory's HTTP method, route, API version, query parameters, and serialized request body against the documentation; exercise the public convenience deserializer and model assertions with representative response JSON. Any integration test for that operation must call `Assert.Inconclusive` after these local checks, before sending the mutating request. Do not send it even when credentials and suitable resources are available. Keep these checks independent of live Azure DevOps data when possible.
+
 Add focused non-integration coverage for each API-specific model assertion. Verify that violating the assertion returns `DeserializationStatus.ModelValidationFailure`, while malformed or structurally invalid payloads continue to return `DeserializationStatus.Failure`.
 
 Reuse existing recursive JSON assertion helpers when practical instead of duplicating them.
 
-Integration tests may depend only on `AZURE_DEVOPS_ORGANIZATION` and `AZURE_DEVOPS_PROJECT`. Do not introduce environment variables for endpoint-specific route inputs or test data. Derive every additional value from another API call in the test setup, such as listing resources and selecting a returned ID before exercising a get-by-ID operation. If the prerequisite call returns no suitable resource, make the test inconclusive rather than failed.
+Integration tests may depend only on `AZURE_DEVOPS_ORGANIZATION` and `AZURE_DEVOPS_PROJECT`. Do not introduce environment variables for endpoint-specific route inputs or test data. Derive every additional value from read-only API calls in the test setup, such as listing resources and selecting a returned ID before exercising a get-by-ID operation. If the prerequisite call returns no suitable resource, make the test inconclusive rather than failed.
 
 ### 8. Validate
 
@@ -218,7 +222,7 @@ Run validation in this order:
 4. run the focused test for every added or refreshed operation
 5. run `git diff --check`
 
-Integration tests require only `AZURE_DEVOPS_ORGANIZATION` and `AZURE_DEVOPS_PROJECT`. If credentials are unavailable or a prerequisite API call returns no suitable test resource, report the test as skipped/inconclusive; do not claim it passed.
+Integration tests require only `AZURE_DEVOPS_ORGANIZATION` and `AZURE_DEVOPS_PROJECT`. If credentials are unavailable or a prerequisite API call returns no suitable test resource, report the test as skipped/inconclusive; do not claim it passed. Report tests for resource-changing operations other than Merges - Create as inconclusive, with their local request and deserialization checks reported separately; never treat the absence of a live call as an integration pass.
 
 Do not fix unrelated failures or revert user changes.
 

@@ -58,6 +58,24 @@ Pingmint.AzureDevOps.GitUserDate
 - "imageUrl" => ImageUrl : string
 - "name" => Name : string
 
+// Git: Merges
+
+Pingmint.AzureDevOps.GitMerge
+- "_links" => Links : Pingmint.AzureDevOps.ReferenceLinks
+- "comment" => Comment : string
+- "detailedStatus" => DetailedStatus : Pingmint.AzureDevOps.GitMergeOperationStatusDetail
+- "mergeOperationId" => MergeOperationId : int
+- "parents" => Parents : [string]
+- "status" => Status : string
+
+Pingmint.AzureDevOps.GitMergeOperationStatusDetail
+- "failureMessage" => FailureMessage : string
+- "mergeCommitId" => MergeCommitId : string
+
+Pingmint.AzureDevOps.GitMergeParameters
+- "comment" => Comment : string
+- "parents" => Parents : [string]
+
 //
 // Git: Pull Requests
 //

@@ -47,3 +47,14 @@ Version:       7.2-preview.2
 
 Request Method: GetPullRequestsByProjectRequest
 Response Model: Pingmint.AzureDevOps.GitPullRequestsResponse
+
+#### Merges
+
+##### Create
+
+Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/git/merges/create?view=azure-devops-rest-7.2&tabs=HTTP
+Endpoint:      https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryNameOrId}/merges
+Version:       7.2-preview.1
+
+Request Method: CreateMergeRequest
+Response Model: Pingmint.AzureDevOps.GitMerge

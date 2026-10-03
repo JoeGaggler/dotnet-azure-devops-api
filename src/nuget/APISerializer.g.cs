@@ -38,11 +38,13 @@ public static partial class APISerializer
 	private static readonly JsonEncodedText JsonEncText_deleteSourceBranch = JsonEncodedText.Encode("deleteSourceBranch");
 	private static readonly JsonEncodedText JsonEncText_description = JsonEncodedText.Encode("description");
 	private static readonly JsonEncodedText JsonEncText_descriptor = JsonEncodedText.Encode("descriptor");
+	private static readonly JsonEncodedText JsonEncText_detailedStatus = JsonEncodedText.Encode("detailedStatus");
 	private static readonly JsonEncodedText JsonEncText_detectRenameFalsePositives = JsonEncodedText.Encode("detectRenameFalsePositives");
 	private static readonly JsonEncodedText JsonEncText_directoryAlias = JsonEncodedText.Encode("directoryAlias");
 	private static readonly JsonEncodedText JsonEncText_disableRenames = JsonEncodedText.Encode("disableRenames");
 	private static readonly JsonEncodedText JsonEncText_displayName = JsonEncodedText.Encode("displayName");
 	private static readonly JsonEncodedText JsonEncText_email = JsonEncodedText.Encode("email");
+	private static readonly JsonEncodedText JsonEncText_failureMessage = JsonEncodedText.Encode("failureMessage");
 	private static readonly JsonEncodedText JsonEncText_forkSource = JsonEncodedText.Encode("forkSource");
 	private static readonly JsonEncodedText JsonEncText_hasDeclined = JsonEncodedText.Encode("hasDeclined");
 	private static readonly JsonEncodedText JsonEncText_hasMultipleMergeBases = JsonEncodedText.Encode("hasMultipleMergeBases");
@@ -68,16 +70,19 @@ public static partial class APISerializer
 	private static readonly JsonEncodedText JsonEncText_lastMergeSourceCommit = JsonEncodedText.Encode("lastMergeSourceCommit");
 	private static readonly JsonEncodedText JsonEncText_lastMergeTargetCommit = JsonEncodedText.Encode("lastMergeTargetCommit");
 	private static readonly JsonEncodedText JsonEncText_lastUpdateTime = JsonEncodedText.Encode("lastUpdateTime");
+	private static readonly JsonEncodedText JsonEncText_mergeCommitId = JsonEncodedText.Encode("mergeCommitId");
 	private static readonly JsonEncodedText JsonEncText_mergeCommitMessage = JsonEncodedText.Encode("mergeCommitMessage");
 	private static readonly JsonEncodedText JsonEncText_mergeFailureMessage = JsonEncodedText.Encode("mergeFailureMessage");
 	private static readonly JsonEncodedText JsonEncText_mergeFailureType = JsonEncodedText.Encode("mergeFailureType");
 	private static readonly JsonEncodedText JsonEncText_mergeId = JsonEncodedText.Encode("mergeId");
+	private static readonly JsonEncodedText JsonEncText_mergeOperationId = JsonEncodedText.Encode("mergeOperationId");
 	private static readonly JsonEncodedText JsonEncText_mergeOptions = JsonEncodedText.Encode("mergeOptions");
 	private static readonly JsonEncodedText JsonEncText_mergeStatus = JsonEncodedText.Encode("mergeStatus");
 	private static readonly JsonEncodedText JsonEncText_mergeStrategy = JsonEncodedText.Encode("mergeStrategy");
 	private static readonly JsonEncodedText JsonEncText_name = JsonEncodedText.Encode("name");
 	private static readonly JsonEncodedText JsonEncText_objectId = JsonEncodedText.Encode("objectId");
 	private static readonly JsonEncodedText JsonEncText_parentRepository = JsonEncodedText.Encode("parentRepository");
+	private static readonly JsonEncodedText JsonEncText_parents = JsonEncodedText.Encode("parents");
 	private static readonly JsonEncodedText JsonEncText_peeledObjectId = JsonEncodedText.Encode("peeledObjectId");
 	private static readonly JsonEncodedText JsonEncText_profileUrl = JsonEncodedText.Encode("profileUrl");
 	private static readonly JsonEncodedText JsonEncText_project = JsonEncodedText.Encode("project");
@@ -787,6 +792,201 @@ public static partial class APISerializer
 						if (reader.TokenType == JsonTokenType.Null) { obj.Name = null; break; }
 						if (reader.TokenType == JsonTokenType.String) { obj.Name = reader.GetString()!; break; }
 						throw new InvalidOperationException($"unexpected token type for Name: {reader.TokenType} ");
+					}
+
+					SkipUnknownPropertyName(ref reader);
+					break;
+				}
+				case JsonTokenType.EndObject: { return; }
+				default: { reader.Skip(); break; }
+			}
+		}
+	}
+	public static void Serialize(Utf8JsonWriter writer, Pingmint.AzureDevOps.GitMerge? value)
+	{
+		if (value is null) { writer.WriteNullValue(); return; }
+		writer.WriteStartObject();
+		if (value.Links is { } localLinks)
+		{
+			writer.WritePropertyName(JsonEncText__links);
+			Serialize(writer, localLinks);
+		}
+		if (value.Comment is { } localComment)
+		{
+			writer.WritePropertyName(JsonEncText_comment);
+			writer.WriteStringValue(localComment);
+		}
+		if (value.DetailedStatus is { } localDetailedStatus)
+		{
+			writer.WritePropertyName(JsonEncText_detailedStatus);
+			Serialize(writer, localDetailedStatus);
+		}
+		if (value.MergeOperationId is { } localMergeOperationId)
+		{
+			writer.WritePropertyName(JsonEncText_mergeOperationId);
+			writer.WriteNumberValue(localMergeOperationId);
+		}
+		if (value.Parents is { } localParents)
+		{
+			writer.WritePropertyName(JsonEncText_parents);
+			Serialize1(writer, localParents);
+		}
+		if (value.Status is { } localStatus)
+		{
+			writer.WritePropertyName(JsonEncText_status);
+			writer.WriteStringValue(localStatus);
+		}
+		writer.WriteEndObject();
+	}
+
+	public static void Deserialize(ref Utf8JsonReader reader, Pingmint.AzureDevOps.GitMerge obj)
+	{
+		while (true)
+		{
+			if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+			switch (reader.TokenType)
+			{
+				case JsonTokenType.PropertyName:
+				{
+					if (reader.ValueTextEquals("_links"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.Links = null; break; }
+						if (reader.TokenType == JsonTokenType.StartObject) { obj.Links = new(); Deserialize(ref reader, obj.Links); break; }
+						throw new InvalidOperationException($"unexpected token type for Links: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("comment"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.Comment = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.Comment = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for Comment: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("detailedStatus"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.DetailedStatus = null; break; }
+						if (reader.TokenType == JsonTokenType.StartObject) { obj.DetailedStatus = new(); Deserialize(ref reader, obj.DetailedStatus); break; }
+						throw new InvalidOperationException($"unexpected token type for DetailedStatus: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("mergeOperationId"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.MergeOperationId = null; break; }
+						if (reader.TokenType == JsonTokenType.Number) { obj.MergeOperationId = reader.GetInt32(); break; }
+						throw new InvalidOperationException($"unexpected token type for MergeOperationId: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("parents"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.Parents = null; break; }
+						if (reader.TokenType == JsonTokenType.StartArray) { obj.Parents = new(); Deserialize1(ref reader, obj.Parents); break; }
+						throw new InvalidOperationException($"unexpected token type for Parents: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("status"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.Status = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.Status = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for Status: {reader.TokenType} ");
+					}
+
+					SkipUnknownPropertyName(ref reader);
+					break;
+				}
+				case JsonTokenType.EndObject: { return; }
+				default: { reader.Skip(); break; }
+			}
+		}
+	}
+	public static void Serialize(Utf8JsonWriter writer, Pingmint.AzureDevOps.GitMergeOperationStatusDetail? value)
+	{
+		if (value is null) { writer.WriteNullValue(); return; }
+		writer.WriteStartObject();
+		if (value.FailureMessage is { } localFailureMessage)
+		{
+			writer.WritePropertyName(JsonEncText_failureMessage);
+			writer.WriteStringValue(localFailureMessage);
+		}
+		if (value.MergeCommitId is { } localMergeCommitId)
+		{
+			writer.WritePropertyName(JsonEncText_mergeCommitId);
+			writer.WriteStringValue(localMergeCommitId);
+		}
+		writer.WriteEndObject();
+	}
+
+	public static void Deserialize(ref Utf8JsonReader reader, Pingmint.AzureDevOps.GitMergeOperationStatusDetail obj)
+	{
+		while (true)
+		{
+			if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+			switch (reader.TokenType)
+			{
+				case JsonTokenType.PropertyName:
+				{
+					if (reader.ValueTextEquals("failureMessage"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.FailureMessage = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.FailureMessage = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for FailureMessage: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("mergeCommitId"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.MergeCommitId = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.MergeCommitId = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for MergeCommitId: {reader.TokenType} ");
+					}
+
+					SkipUnknownPropertyName(ref reader);
+					break;
+				}
+				case JsonTokenType.EndObject: { return; }
+				default: { reader.Skip(); break; }
+			}
+		}
+	}
+	public static void Serialize(Utf8JsonWriter writer, Pingmint.AzureDevOps.GitMergeParameters? value)
+	{
+		if (value is null) { writer.WriteNullValue(); return; }
+		writer.WriteStartObject();
+		if (value.Comment is { } localComment)
+		{
+			writer.WritePropertyName(JsonEncText_comment);
+			writer.WriteStringValue(localComment);
+		}
+		if (value.Parents is { } localParents)
+		{
+			writer.WritePropertyName(JsonEncText_parents);
+			Serialize1(writer, localParents);
+		}
+		writer.WriteEndObject();
+	}
+
+	public static void Deserialize(ref Utf8JsonReader reader, Pingmint.AzureDevOps.GitMergeParameters obj)
+	{
+		while (true)
+		{
+			if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+			switch (reader.TokenType)
+			{
+				case JsonTokenType.PropertyName:
+				{
+					if (reader.ValueTextEquals("comment"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.Comment = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.Comment = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for Comment: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("parents"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.Parents = null; break; }
+						if (reader.TokenType == JsonTokenType.StartArray) { obj.Parents = new(); Deserialize1(ref reader, obj.Parents); break; }
+						throw new InvalidOperationException($"unexpected token type for Parents: {reader.TokenType} ");
 					}
 
 					SkipUnknownPropertyName(ref reader);
@@ -2693,6 +2893,25 @@ public sealed partial record class GitUserDate
 	public string? Email { get; set; }
 	public string? ImageUrl { get; set; }
 	public string? Name { get; set; }
+}
+public sealed partial record class GitMerge
+{
+	public ReferenceLinks? Links { get; set; }
+	public string? Comment { get; set; }
+	public GitMergeOperationStatusDetail? DetailedStatus { get; set; }
+	public int? MergeOperationId { get; set; }
+	public List<string>? Parents { get; set; }
+	public string? Status { get; set; }
+}
+public sealed partial record class GitMergeOperationStatusDetail
+{
+	public string? FailureMessage { get; set; }
+	public string? MergeCommitId { get; set; }
+}
+public sealed partial record class GitMergeParameters
+{
+	public string? Comment { get; set; }
+	public List<string>? Parents { get; set; }
 }
 public sealed partial record class GitPullRequest
 {

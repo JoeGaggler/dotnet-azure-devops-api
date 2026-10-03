@@ -187,4 +187,53 @@ public static class HttpRequestFactory
         var request = new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
         return request;
     }
+
+    /// <summary>
+    /// Requests a Git merge operation for two commits.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="project">Project ID or project name.</param>
+    /// <param name="repositoryNameOrId">The name or ID of the repository.</param>
+    /// <param name="parents">An enumeration of the parent commit IDs for the merge commit.</param>
+    /// <param name="comment">Comment or message of the commit. This parameter is optional.</param>
+    /// <param name="includeLinks">True to include links. This parameter is optional.</param>
+    /// <returns>An HTTP request message for the Create Merge operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.1.
+    /// See <see href="https://learn.microsoft.com/en-us/rest/api/azure/devops/git/merges/create?view=azure-devops-rest-7.2&amp;tabs=HTTP">the official Azure DevOps REST API documentation</see>.
+    /// </remarks>
+    public static HttpRequestMessage CreateMergeRequest(
+        string organization,
+        string project,
+        string repositoryNameOrId,
+        IEnumerable<string> parents,
+        string? comment = null,
+        bool? includeLinks = null)
+    {
+        var queryParameters = new List<string>();
+
+        if (includeLinks is not null)
+            queryParameters.Add($"includeLinks={(includeLinks.Value ? "true" : "false")}");
+
+        queryParameters.Add("api-version=7.2-preview.1");
+
+        var organizationSegment = Uri.EscapeDataString(organization);
+        var projectSegment = Uri.EscapeDataString(project);
+        var repositorySegment = Uri.EscapeDataString(repositoryNameOrId);
+        var url = $"https://dev.azure.com/{organizationSegment}/{projectSegment}/_apis/git/repositories/{repositorySegment}/merges?{string.Join('&', queryParameters)}";
+        var request = new HttpRequestMessage(HttpMethod.Post, new Uri(url, UriKind.Absolute));
+
+        var mergeParameters = new GitMergeParameters
+        {
+            Comment = comment,
+            Parents = parents.ToList(),
+        };
+        using var bodyStream = new MemoryStream();
+        using (var writer = new System.Text.Json.Utf8JsonWriter(bodyStream))
+            APISerializer.Serialize(writer, mergeParameters);
+
+        request.Content = new ByteArrayContent(bodyStream.ToArray());
+        request.Content.Headers.ContentType = new("application/json");
+        return request;
+    }
 }

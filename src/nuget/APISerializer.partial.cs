@@ -181,6 +181,52 @@ partial class APISerializer
             Value = result,
         };
     }
+
+    public static DeserializationResult<GitMerge> DeserializeGitMerge(String json)
+    {
+        if (!TryGetUtf8ByteArrayFromString(json, out var bytes, out var bytesWritten))
+        {
+            return new DeserializationResult<GitMerge>
+            {
+                Status = DeserializationStatus.Failure,
+                Value = new GitMerge(),
+            };
+        }
+
+        return DeserializeGitMerge(bytes.AsSpan(0, bytesWritten));
+    }
+
+    public static DeserializationResult<GitMerge> DeserializeGitMerge(ReadOnlySpan<Byte> json)
+    {
+        var result = new GitMerge();
+        var status = DeserializationStatus.None;
+        var reader = new Utf8JsonReader(json);
+
+        try
+        {
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+            {
+                status = DeserializationStatus.Failure;
+            }
+            else
+            {
+                Deserialize(ref reader, result);
+                status = result.MergeOperationId is null
+                    ? DeserializationStatus.ModelValidationFailure
+                    : DeserializationStatus.Success;
+            }
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        {
+            status = DeserializationStatus.Failure;
+        }
+
+        return new DeserializationResult<GitMerge>
+        {
+            Status = status,
+            Value = result,
+        };
+    }
 }
 
 public record struct DeserializationResult<T>
