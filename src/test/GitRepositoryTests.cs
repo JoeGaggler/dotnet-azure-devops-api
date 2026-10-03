@@ -40,17 +40,33 @@ public sealed class GitRepositoryTests : AzureDevOpsIntegrationTestBase
     [TestCategory("Integration")]
     public async Task FetchRepositoryAsync()
     {
-        var repository = Environment.GetEnvironmentVariable("AZURE_DEVOPS_REPOSITORY");
-        if (string.IsNullOrWhiteSpace(repository))
+        using var client = new HttpClient();
+        using var listRequest = HttpRequestFactory.ListRepositoriesRequest(Organization, Project);
+        AddAuthorizationForAzureDevOps(listRequest);
+
+        using var listResponse = await client.SendAsync(listRequest, TestContext.CancellationToken);
+        var listPayload = await listResponse.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);
+
+        Assert.IsTrue(
+            listResponse.IsSuccessStatusCode,
+            $"Azure DevOps returned {(int)listResponse.StatusCode} {listResponse.ReasonPhrase}: {Encoding.UTF8.GetString(listPayload)}");
+
+        var listResult = APISerializer.DeserializeGitRepositoriesResponse(listPayload);
+        Assert.AreEqual(DeserializationStatus.Success, listResult.Status);
+        Assert.IsNotNull(listResult.Value.Value);
+
+        var repositoryId = listResult.Value.Value
+            .Select(repository => repository.Id)
+            .FirstOrDefault(id => id is not null);
+        if (repositoryId is null)
         {
-            Assert.Inconclusive("Set AZURE_DEVOPS_REPOSITORY to a repository name or ID to run this integration test.");
+            Assert.Inconclusive("The configured project has no repositories to retrieve by ID.");
             return;
         }
 
-        using var request = HttpRequestFactory.GetRepositoryRequest(Organization, repository, Project);
+        using var request = HttpRequestFactory.GetRepositoryRequest(Organization, repositoryId, Project);
         AddAuthorizationForAzureDevOps(request);
 
-        using var client = new HttpClient();
         using var response = await client.SendAsync(request, TestContext.CancellationToken);
         var payload = await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);
 

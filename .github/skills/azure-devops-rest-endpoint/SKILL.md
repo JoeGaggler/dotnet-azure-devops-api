@@ -204,7 +204,9 @@ Add or extend an integration test under `src/test/` that:
 
 Add focused non-integration coverage for each API-specific model assertion. Verify that violating the assertion returns `DeserializationStatus.ModelValidationFailure`, while malformed or structurally invalid payloads continue to return `DeserializationStatus.Failure`.
 
-Reuse existing recursive JSON assertion helpers when practical instead of duplicating them. If the endpoint requires route inputs beyond organization/project, use clearly named environment variables and make missing configuration inconclusive rather than failed.
+Reuse existing recursive JSON assertion helpers when practical instead of duplicating them.
+
+Integration tests may depend only on `AZURE_DEVOPS_ORGANIZATION` and `AZURE_DEVOPS_PROJECT`. Do not introduce environment variables for endpoint-specific route inputs or test data. Derive every additional value from another API call in the test setup, such as listing resources and selecting a returned ID before exercising a get-by-ID operation. If the prerequisite call returns no suitable resource, make the test inconclusive rather than failed.
 
 ### 8. Validate
 
@@ -216,7 +218,7 @@ Run validation in this order:
 4. run the focused test for every added or refreshed operation
 5. run `git diff --check`
 
-The integration test requires `AZURE_DEVOPS_ORGANIZATION` and `AZURE_DEVOPS_PROJECT` and may require endpoint-specific configuration. If credentials or configuration are unavailable, report the test as skipped/inconclusive; do not claim it passed.
+Integration tests require only `AZURE_DEVOPS_ORGANIZATION` and `AZURE_DEVOPS_PROJECT`. If credentials are unavailable or a prerequisite API call returns no suitable test resource, report the test as skipped/inconclusive; do not claim it passed.
 
 Do not fix unrelated failures or revert user changes.
 
