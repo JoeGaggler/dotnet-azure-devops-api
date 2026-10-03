@@ -236,4 +236,38 @@ public static class HttpRequestFactory
         request.Content.Headers.ContentType = new("application/json");
         return request;
     }
+
+    /// <summary>
+    /// Gets the details of a specific merge operation.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="project">Project ID or project name.</param>
+    /// <param name="repositoryNameOrId">The name or ID of the repository.</param>
+    /// <param name="mergeOperationId">OperationId of the merge request.</param>
+    /// <param name="includeLinks">True to include links. This parameter is optional.</param>
+    /// <returns>An HTTP request message for the Get Merge operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.1.
+    /// See <see href="https://learn.microsoft.com/en-us/rest/api/azure/devops/git/merges/get?view=azure-devops-rest-7.2&amp;tabs=HTTP">the official Azure DevOps REST API documentation</see>.
+    /// </remarks>
+    public static HttpRequestMessage GetMergeRequest(
+        string organization,
+        string project,
+        string repositoryNameOrId,
+        int mergeOperationId,
+        bool? includeLinks = null)
+    {
+        var queryParameters = new List<string>();
+
+        if (includeLinks is not null)
+            queryParameters.Add($"includeLinks={(includeLinks.Value ? "true" : "false")}");
+
+        queryParameters.Add("api-version=7.2-preview.1");
+
+        var organizationSegment = Uri.EscapeDataString(organization);
+        var projectSegment = Uri.EscapeDataString(project);
+        var repositorySegment = Uri.EscapeDataString(repositoryNameOrId);
+        var url = $"https://dev.azure.com/{organizationSegment}/{projectSegment}/_apis/git/repositories/{repositorySegment}/merges/{mergeOperationId}?{string.Join('&', queryParameters)}";
+        return new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+    }
 }

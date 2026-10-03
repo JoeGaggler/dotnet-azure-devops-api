@@ -119,4 +119,30 @@ public sealed class APISerializerTests
         Assert.AreEqual("source", body.RootElement.GetProperty("parents")[0].GetString());
         Assert.AreEqual("target", body.RootElement.GetProperty("parents")[1].GetString());
     }
+
+    [TestMethod]
+    public void GetMergeRequestIncludesDocumentedUriAndOptionalQueryParameter()
+    {
+        using var request = HttpRequestFactory.GetMergeRequest(
+            "org name",
+            "project name",
+            "repo/id",
+            42,
+            includeLinks: true);
+
+        Assert.AreEqual(HttpMethod.Get, request.Method);
+        Assert.AreEqual(
+            "https://dev.azure.com/org%20name/project%20name/_apis/git/repositories/repo%2Fid/merges/42?includeLinks=true&api-version=7.2-preview.1",
+            request.RequestUri!.AbsoluteUri);
+    }
+
+    [TestMethod]
+    public void GetMergeRequestOmitsUnsetOptionalQueryParameter()
+    {
+        using var request = HttpRequestFactory.GetMergeRequest("organization", "project", "repository", 42);
+
+        Assert.AreEqual(
+            "https://dev.azure.com/organization/project/_apis/git/repositories/repository/merges/42?api-version=7.2-preview.1",
+            request.RequestUri!.AbsoluteUri);
+    }
 }

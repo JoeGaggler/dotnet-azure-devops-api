@@ -7,6 +7,34 @@ public sealed class GitMergeTests : AzureDevOpsIntegrationTestBase
 {
     [TestMethod]
     [TestCategory("Integration")]
+    public void GetMergeAsync()
+    {
+        using var request = HttpRequestFactory.GetMergeRequest(
+            Organization,
+            Project,
+            "repository",
+            1,
+            includeLinks: true);
+        AddAuthorizationForAzureDevOps(request);
+
+        Assert.AreEqual(HttpMethod.Get, request.Method);
+        Assert.AreEqual(
+            $"https://dev.azure.com/{Uri.EscapeDataString(Organization)}/{Uri.EscapeDataString(Project)}/_apis/git/repositories/repository/merges/1?includeLinks=true&api-version=7.2-preview.1",
+            request.RequestUri!.AbsoluteUri);
+
+        var payload = """{"mergeOperationId":1,"status":"completed","detailedStatus":{"mergeCommitId":"7e7460f6b61bbaa7cc2b52e4c33c0fb44d65ef9a"},"parents":["source","target"],"comment":"merge comment"}"""u8.ToArray();
+        var deserializationResult = APISerializer.DeserializeGitMerge(payload);
+        Assert.AreEqual(DeserializationStatus.Success, deserializationResult.Status);
+
+        using var document = JsonDocument.Parse(payload);
+        GitPullRequestTests.AssertDeserializedValue(document.RootElement, deserializationResult.Value, "merge");
+
+        Assert.Inconclusive(
+            "A merge operation ID cannot be obtained through the available read-only APIs; the create operation is not invoked to obtain test data.");
+    }
+
+    [TestMethod]
+    [TestCategory("Integration")]
     public async Task CreateMergeAsync()
     {
         using var request = HttpRequestFactory.CreateMergeRequest(
