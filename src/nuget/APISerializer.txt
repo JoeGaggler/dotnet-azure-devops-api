@@ -1,5 +1,163 @@
+//
+// Git
+//
+
+Pingmint.AzureDevOps.GitCommitRef
+- "commitId" => CommitId : string
+- "url" => Url : string
+
+Pingmint.AzureDevOps.GitForkRef
+- "_links" => Links : Pingmint.AzureDevOps.ReferenceLinks
+- "creator" => Creator : Pingmint.AzureDevOps.IdentityRef
+- "isLocked" => IsLocked : bool
+- "isLockedBy" => IsLockedBy : Pingmint.AzureDevOps.IdentityRef
+- "name" => Name : string
+- "objectId" => ObjectId : string
+- "peeledObjectId" => PeeledObjectId : string
+- "repository" => Repository : Pingmint.AzureDevOps.GitRepository
+- "url" => Url : string
+
+Pingmint.AzureDevOps.GitRepository
+- "_links" => Links : Pingmint.AzureDevOps.ReferenceLinks
+- "creationDate" => CreationDate : string
+- "defaultBranch" => DefaultBranch : string
+- "id" => Id : string
+- "isDisabled" => IsDisabled : bool
+- "isFork" => IsFork : bool
+- "isInMaintenance" => IsInMaintenance : bool
+- "name" => Name : string
+- "project" => Project : Pingmint.AzureDevOps.TeamProjectReference
+- "remoteUrl" => RemoteUrl : string
+- "size" => Size : long
+- "sshUrl" => SshUrl : string
+- "url" => Url : string
+- "validRemoteUrls" => ValidRemoteUrls : [string]
+- "webUrl" => WebUrl : string
+
+//
+// Git: Pull Requests
+//
+
+Pingmint.AzureDevOps.GitPullRequest
+- "_links" => Links : Pingmint.AzureDevOps.ReferenceLinks
+- "artifactId" => ArtifactId : string
+- "autoCompleteSetBy" => AutoCompleteSetBy : Pingmint.AzureDevOps.IdentityRef
+- "closedBy" => ClosedBy : Pingmint.AzureDevOps.IdentityRef
+- "closedDate" => ClosedDate : string
+- "codeReviewId" => CodeReviewId : int
+- "commits" => Commits : [Pingmint.AzureDevOps.GitCommitRef]
+- "completionOptions" => CompletionOptions : Pingmint.AzureDevOps.GitPullRequestCompletionOptions
+- "completionQueueTime" => CompletionQueueTime : string
+- "createdBy" => CreatedBy : Pingmint.AzureDevOps.IdentityRef
+- "creationDate" => CreationDate : string
+- "description" => Description : string
+- "forkSource" => ForkSource : Pingmint.AzureDevOps.GitForkRef
+- "hasMultipleMergeBases" => HasMultipleMergeBases : bool
+- "ignoreTargetRefAndChooseDynamically" => IgnoreTargetRefAndChooseDynamically : bool
+- "isDraft" => IsDraft : bool
+- "labels" => Labels : [Pingmint.AzureDevOps.WebApiTagDefinition]
+- "lastMergeCommit" => LastMergeCommit : Pingmint.AzureDevOps.GitCommitRef
+- "lastMergeSourceCommit" => LastMergeSourceCommit : Pingmint.AzureDevOps.GitCommitRef
+- "lastMergeTargetCommit" => LastMergeTargetCommit : Pingmint.AzureDevOps.GitCommitRef
+- "mergeFailureMessage" => MergeFailureMessage : string
+- "mergeFailureType" => MergeFailureType : string
+- "mergeId" => MergeId : string
+- "mergeOptions" => MergeOptions : Pingmint.AzureDevOps.GitPullRequestMergeOptions
+- "mergeStatus" => MergeStatus : string
+- "pullRequestId" => PullRequestId : int
+- "remoteUrl" => RemoteUrl : string
+- "repository" => Repository : Pingmint.AzureDevOps.GitRepository
+- "reviewers" => Reviewers : [Pingmint.AzureDevOps.IdentityRefWithVote]
+- "sourceRefName" => SourceRefName : string
+- "status" => Status : string
+- "supportsIterations" => SupportsIterations : bool
+- "targetRefName" => TargetRefName : string
+- "title" => Title : string
+- "url" => Url : string
+- "workItemRefs" => WorkItemRefs : [Pingmint.AzureDevOps.ResourceRef]
+
+Pingmint.AzureDevOps.GitPullRequestCompletionOptions
+- "autoCompleteIgnoreConfigIds" => AutoCompleteIgnoreConfigIds : [int]
+- "bypassPolicy" => BypassPolicy : bool
+- "bypassReason" => BypassReason : string
+- "deleteSourceBranch" => DeleteSourceBranch : bool
+- "mergeCommitMessage" => MergeCommitMessage : string
+- "mergeStrategy" => MergeStrategy : string
+- "squashMerge" => SquashMerge : bool
+- "transitionWorkItems" => TransitionWorkItems : bool
+- "triggeredByAutoComplete" => TriggeredByAutoComplete : bool
+
+Pingmint.AzureDevOps.GitPullRequestMergeOptions
+- "conflictAuthorshipCommits" => ConflictAuthorshipCommits : bool
+- "detectRenameFalsePositives" => DetectRenameFalsePositives : bool
+- "disableRenames" => DisableRenames : bool
+
 Pingmint.AzureDevOps.GitPullRequestsResponse
 - "value" => Value : [Pingmint.AzureDevOps.GitPullRequest]
 
-Pingmint.AzureDevOps.GitPullRequest
-- "pullRequestId" => PullRequestId : int
+Pingmint.AzureDevOps.IdentityRefWithVote
+- "_links" => Links : Pingmint.AzureDevOps.ReferenceLinks
+- "descriptor" => Descriptor : string
+- "directoryAlias" => DirectoryAlias : string
+- "displayName" => DisplayName : string
+- "hasDeclined" => HasDeclined : bool
+- "id" => Id : string
+- "imageUrl" => ImageUrl : string
+- "inactive" => Inactive : bool
+- "isAadIdentity" => IsAadIdentity : bool
+- "isContainer" => IsContainer : bool
+- "isDeletedInOrigin" => IsDeletedInOrigin : bool
+- "isFlagged" => IsFlagged : bool
+- "isReapprove" => IsReapprove : bool
+- "isRequired" => IsRequired : bool
+- "profileUrl" => ProfileUrl : string
+- "reviewerUrl" => ReviewerUrl : string
+- "uniqueName" => UniqueName : string
+- "url" => Url : string
+- "vote" => Vote : int
+- "votedFor" => VotedFor : [Pingmint.AzureDevOps.IdentityRefWithVote]
+
+// Common Entities
+
+Pingmint.AzureDevOps.IdentityRef
+- "_links" => Links : Pingmint.AzureDevOps.ReferenceLinks
+- "descriptor" => Descriptor : string
+- "directoryAlias" => DirectoryAlias : string
+- "displayName" => DisplayName : string
+- "id" => Id : string
+- "imageUrl" => ImageUrl : string
+- "inactive" => Inactive : bool
+- "isAadIdentity" => IsAadIdentity : bool
+- "isContainer" => IsContainer : bool
+- "isDeletedInOrigin" => IsDeletedInOrigin : bool
+- "profileUrl" => ProfileUrl : string
+- "uniqueName" => UniqueName : string
+- "url" => Url : string
+
+Pingmint.AzureDevOps.ReferenceLink
+- "href" => Href : string
+
+Pingmint.AzureDevOps.ReferenceLinks
+- * => Links : {Pingmint.AzureDevOps.ReferenceLink}
+
+Pingmint.AzureDevOps.ResourceRef
+- "id" => Id : string
+- "url" => Url : string
+
+Pingmint.AzureDevOps.TeamProjectReference
+- "abbreviation" => Abbreviation : string
+- "defaultTeamImageUrl" => DefaultTeamImageUrl : string
+- "description" => Description : string
+- "id" => Id : string
+- "lastUpdateTime" => LastUpdateTime : string
+- "name" => Name : string
+- "revision" => Revision : long
+- "state" => State : string
+- "url" => Url : string
+- "visibility" => Visibility : string
+
+Pingmint.AzureDevOps.WebApiTagDefinition
+- "active" => Active : bool
+- "id" => Id : string
+- "name" => Name : string
+- "url" => Url : string
