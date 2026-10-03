@@ -21,14 +21,12 @@ public sealed class GitPullRequestTests : AzureDevOpsIntegrationTestBase
             response.IsSuccessStatusCode,
             $"Azure DevOps returned {(int)response.StatusCode} {response.ReasonPhrase}: {Encoding.UTF8.GetString(payload)}");
 
-        var reader = new Utf8JsonReader(payload);
-        Assert.IsTrue(reader.Read(), "Azure DevOps returned an empty response.");
-        Assert.AreEqual(JsonTokenType.StartObject, reader.TokenType);
+        var deserializationResult = APISerializer.DeserializeGitPullRequestsResponse(payload);
+        Assert.AreEqual(DeserializationStatus.Success, deserializationResult.Status);
+        Assert.IsNotNull(deserializationResult.Value);
+        Assert.IsNotNull(deserializationResult.Value.Value);
 
-        var result = new GitPullRequestsResponse();
-        APISerializer.Deserialize(ref reader, result);
-
-        Assert.IsNotNull(result.Value);
+        var result = deserializationResult.Value;
 
         using var document = JsonDocument.Parse(payload);
         var expectedPullRequests = document.RootElement.GetProperty("value");
