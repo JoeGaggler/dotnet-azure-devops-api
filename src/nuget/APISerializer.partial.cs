@@ -10,6 +10,92 @@ partial class APISerializer
         return System.Text.Encoding.UTF8.TryGetBytes(json.AsSpan(), bytes, out bytesWritten);
     }
 
+    public static DeserializationResult<GitRepositoriesResponse> DeserializeGitRepositoriesResponse(String json)
+    {
+        if (!TryGetUtf8ByteArrayFromString(json, out var bytes, out var bytesWritten))
+        {
+            return new DeserializationResult<GitRepositoriesResponse>
+            {
+                Status = DeserializationStatus.Failure,
+                Value = new GitRepositoriesResponse(),
+            };
+        }
+
+        return DeserializeGitRepositoriesResponse(bytes.AsSpan(0, bytesWritten));
+    }
+
+    public static DeserializationResult<GitRepositoriesResponse> DeserializeGitRepositoriesResponse(ReadOnlySpan<Byte> json)
+    {
+        var result = new GitRepositoriesResponse();
+        var status = DeserializationStatus.None;
+        var reader = new Utf8JsonReader(json);
+
+        if (!reader.Read())
+        {
+            status = DeserializationStatus.Failure;
+        }
+        else if (reader.TokenType != JsonTokenType.StartObject)
+        {
+            status = DeserializationStatus.Failure;
+        }
+        else
+        {
+            Deserialize(ref reader, result);
+            status = result.Value is null
+                ? DeserializationStatus.ModelValidationFailure
+                : DeserializationStatus.Success;
+        }
+
+        return new DeserializationResult<GitRepositoriesResponse>
+        {
+            Status = status,
+            Value = result,
+        };
+    }
+
+    public static DeserializationResult<GitRepository> DeserializeGitRepository(String json)
+    {
+        if (!TryGetUtf8ByteArrayFromString(json, out var bytes, out var bytesWritten))
+        {
+            return new DeserializationResult<GitRepository>
+            {
+                Status = DeserializationStatus.Failure,
+                Value = new GitRepository(),
+            };
+        }
+
+        return DeserializeGitRepository(bytes.AsSpan(0, bytesWritten));
+    }
+
+    public static DeserializationResult<GitRepository> DeserializeGitRepository(ReadOnlySpan<Byte> json)
+    {
+        var result = new GitRepository();
+        var status = DeserializationStatus.None;
+        var reader = new Utf8JsonReader(json);
+
+        if (!reader.Read())
+        {
+            status = DeserializationStatus.Failure;
+        }
+        else if (reader.TokenType != JsonTokenType.StartObject)
+        {
+            status = DeserializationStatus.Failure;
+        }
+        else
+        {
+            Deserialize(ref reader, result);
+            status = result.Id is null
+                ? DeserializationStatus.ModelValidationFailure
+                : DeserializationStatus.Success;
+        }
+
+        return new DeserializationResult<GitRepository>
+        {
+            Status = status,
+            Value = result,
+        };
+    }
+
     public static DeserializationResult<GitPullRequest> DeserializeGitPullRequest(String json)
     {
         if (!TryGetUtf8ByteArrayFromString(json, out var bytes, out var bytesWritten))

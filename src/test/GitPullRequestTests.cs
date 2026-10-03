@@ -89,7 +89,7 @@ public sealed class GitPullRequestTests : AzureDevOpsIntegrationTestBase
         }
     }
 
-    private static void AssertDeserializedValue(JsonElement expected, object? actual, string path)
+    internal static void AssertDeserializedValue(JsonElement expected, object? actual, string path)
     {
         if (expected.ValueKind == JsonValueKind.Null)
         {

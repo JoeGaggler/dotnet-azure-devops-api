@@ -20,6 +20,10 @@ Pingmint.AzureDevOps.GitForkRef
 - "repository" => Repository : Pingmint.AzureDevOps.GitRepository
 - "url" => Url : string
 
+Pingmint.AzureDevOps.GitRepositoriesResponse
+- "count" => Count : int
+- "value" => Value : [Pingmint.AzureDevOps.GitRepository]
+
 Pingmint.AzureDevOps.GitRepository
 - "_links" => Links : Pingmint.AzureDevOps.ReferenceLinks
 - "creationDate" => CreationDate : string
@@ -29,6 +33,7 @@ Pingmint.AzureDevOps.GitRepository
 - "isFork" => IsFork : bool
 - "isInMaintenance" => IsInMaintenance : bool
 - "name" => Name : string
+- "parentRepository" => ParentRepository : Pingmint.AzureDevOps.GitRepositoryRef
 - "project" => Project : Pingmint.AzureDevOps.TeamProjectReference
 - "remoteUrl" => RemoteUrl : string
 - "size" => Size : long
@@ -36,6 +41,16 @@ Pingmint.AzureDevOps.GitRepository
 - "url" => Url : string
 - "validRemoteUrls" => ValidRemoteUrls : [string]
 - "webUrl" => WebUrl : string
+
+Pingmint.AzureDevOps.GitRepositoryRef
+- "collection" => Collection : Pingmint.AzureDevOps.TeamProjectCollectionReference
+- "id" => Id : string
+- "isFork" => IsFork : bool
+- "name" => Name : string
+- "project" => Project : Pingmint.AzureDevOps.TeamProjectReference
+- "remoteUrl" => RemoteUrl : string
+- "sshUrl" => SshUrl : string
+- "url" => Url : string
 
 Pingmint.AzureDevOps.GitUserDate
 - "date" => Date : string
@@ -152,6 +167,12 @@ Pingmint.AzureDevOps.ReferenceLinks
 
 Pingmint.AzureDevOps.ResourceRef
 - "id" => Id : string
+- "url" => Url : string
+
+Pingmint.AzureDevOps.TeamProjectCollectionReference
+- "avatarUrl" => AvatarUrl : string
+- "id" => Id : string
+- "name" => Name : string
 - "url" => Url : string
 
 Pingmint.AzureDevOps.TeamProjectReference

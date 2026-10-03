@@ -5,6 +5,68 @@ namespace Pingmint.AzureDevOps;
 public static class HttpRequestFactory
 {
     /// <summary>
+    /// Retrieves Git repositories.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="project">The project ID or project name. This parameter is optional.</param>
+    /// <param name="includeAllUrls">Whether to include all remote URLs. This parameter is optional and defaults to <see langword="false"/>.</param>
+    /// <param name="includeHidden">Whether to include hidden repositories. This parameter is optional and defaults to <see langword="false"/>.</param>
+    /// <param name="includeLinks">Whether to include reference links. This parameter is optional and defaults to <see langword="false"/>.</param>
+    /// <returns>An HTTP request message for the List Repositories operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.2.
+    /// See <see href="https://learn.microsoft.com/en-us/rest/api/azure/devops/git/repositories/list?view=azure-devops-rest-7.2&amp;tabs=HTTP">the official Azure DevOps REST API documentation</see>.
+    /// </remarks>
+    public static HttpRequestMessage ListRepositoriesRequest(
+        string organization,
+        string? project = null,
+        bool? includeAllUrls = null,
+        bool? includeHidden = null,
+        bool? includeLinks = null)
+    {
+        var queryParameters = new List<string>();
+
+        if (includeAllUrls is not null)
+            queryParameters.Add($"includeAllUrls={(includeAllUrls.Value ? "true" : "false")}");
+        if (includeHidden is not null)
+            queryParameters.Add($"includeHidden={(includeHidden.Value ? "true" : "false")}");
+        if (includeLinks is not null)
+            queryParameters.Add($"includeLinks={(includeLinks.Value ? "true" : "false")}");
+
+        queryParameters.Add("api-version=7.2-preview.2");
+
+        var organizationSegment = Uri.EscapeDataString(organization);
+        var projectSegment = project is null ? null : $"/{Uri.EscapeDataString(project)}";
+        var url = $"https://dev.azure.com/{organizationSegment}{projectSegment}/_apis/git/repositories?{string.Join('&', queryParameters)}";
+        var request = new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+        return request;
+    }
+
+    /// <summary>
+    /// Retrieves a Git repository.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="repositoryId">The name or ID of the repository.</param>
+    /// <param name="project">The project ID or project name. This parameter is optional.</param>
+    /// <returns>An HTTP request message for the Get Repository operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.2.
+    /// See <see href="https://learn.microsoft.com/en-us/rest/api/azure/devops/git/repositories/get-repository?view=azure-devops-rest-7.2&amp;tabs=HTTP">the official Azure DevOps REST API documentation</see>.
+    /// </remarks>
+    public static HttpRequestMessage GetRepositoryRequest(
+        string organization,
+        string repositoryId,
+        string? project = null)
+    {
+        var organizationSegment = Uri.EscapeDataString(organization);
+        var projectSegment = project is null ? null : $"/{Uri.EscapeDataString(project)}";
+        var repositorySegment = Uri.EscapeDataString(repositoryId);
+        var url = $"https://dev.azure.com/{organizationSegment}{projectSegment}/_apis/git/repositories/{repositorySegment}?api-version=7.2-preview.2";
+        var request = new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+        return request;
+    }
+
+    /// <summary>
     /// Retrieves a pull request.
     /// </summary>
     /// <param name="organization">The name of the Azure DevOps organization.</param>

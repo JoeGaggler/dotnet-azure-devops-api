@@ -8,6 +8,26 @@ This section contains the list of APIs which this library supports.
 
 ### Git
 
+#### Repositories
+
+##### Get Repository
+
+Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/git/repositories/get-repository?view=azure-devops-rest-7.2&tabs=HTTP
+Endpoint:      https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryId}
+Version:       7.2-preview.2
+
+Request Method: GetRepositoryRequest
+Response Model: Pingmint.AzureDevOps.GitRepository
+
+##### List Repositories
+
+Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/git/repositories/list?view=azure-devops-rest-7.2&tabs=HTTP
+Endpoint:      https://dev.azure.com/{organization}/{project}/_apis/git/repositories
+Version:       7.2-preview.2
+
+Request Method: ListRepositoriesRequest
+Response Model: Pingmint.AzureDevOps.GitRepositoriesResponse
+
 #### Pull Requests
 
 ##### Get Pull Request By Id
