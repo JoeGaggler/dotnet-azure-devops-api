@@ -1,3 +1,13 @@
 {
-    "dotnet.defaultSolution": "src/Pingmint.AzureDevOps.slnx"
+    "dotnet.defaultSolution": "src/Pingmint.AzureDevOps.slnx",
+    "chat.tools.terminal.autoApprove": {
+        "dotnet jsoncodegen": true,
+        "dotnet tool restore": true,
+        "dotnet build": true,
+        "dotnet test": true,
+        "/^dotnet --version$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
 }

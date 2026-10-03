@@ -3,7 +3,10 @@
 //
 
 Pingmint.AzureDevOps.GitCommitRef
+- "author" => Author : Pingmint.AzureDevOps.GitUserDate
+- "comment" => Comment : string
 - "commitId" => CommitId : string
+- "committer" => Committer : Pingmint.AzureDevOps.GitUserDate
 - "url" => Url : string
 
 Pingmint.AzureDevOps.GitForkRef
@@ -33,6 +36,12 @@ Pingmint.AzureDevOps.GitRepository
 - "url" => Url : string
 - "validRemoteUrls" => ValidRemoteUrls : [string]
 - "webUrl" => WebUrl : string
+
+Pingmint.AzureDevOps.GitUserDate
+- "date" => Date : string
+- "email" => Email : string
+- "imageUrl" => ImageUrl : string
+- "name" => Name : string
 
 //
 // Git: Pull Requests
@@ -94,6 +103,7 @@ Pingmint.AzureDevOps.GitPullRequestMergeOptions
 
 Pingmint.AzureDevOps.GitPullRequestsResponse
 - "value" => Value : [Pingmint.AzureDevOps.GitPullRequest]
+- "count" => Count : int
 
 Pingmint.AzureDevOps.IdentityRefWithVote
 - "_links" => Links : Pingmint.AzureDevOps.ReferenceLinks

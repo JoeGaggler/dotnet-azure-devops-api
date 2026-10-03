@@ -10,6 +10,49 @@ partial class APISerializer
         return System.Text.Encoding.UTF8.TryGetBytes(json.AsSpan(), bytes, out bytesWritten);
     }
 
+    public static DeserializationResult<GitPullRequest> DeserializeGitPullRequest(String json)
+    {
+        if (!TryGetUtf8ByteArrayFromString(json, out var bytes, out var bytesWritten))
+        {
+            return new DeserializationResult<GitPullRequest>
+            {
+                Status = DeserializationStatus.Failure,
+                Value = new GitPullRequest(),
+            };
+        }
+
+        return DeserializeGitPullRequest(bytes.AsSpan(0, bytesWritten));
+    }
+
+    public static DeserializationResult<GitPullRequest> DeserializeGitPullRequest(ReadOnlySpan<Byte> json)
+    {
+        var result = new GitPullRequest();
+        var status = DeserializationStatus.None;
+        var reader = new Utf8JsonReader(json);
+
+        if (!reader.Read())
+        {
+            status = DeserializationStatus.Failure;
+        }
+        else if (reader.TokenType != JsonTokenType.StartObject)
+        {
+            status = DeserializationStatus.Failure;
+        }
+        else
+        {
+            Deserialize(ref reader, result);
+            status = result.PullRequestId is null
+                ? DeserializationStatus.ModelValidationFailure
+                : DeserializationStatus.Success;
+        }
+
+        return new DeserializationResult<GitPullRequest>
+        {
+            Status = status,
+            Value = result,
+        };
+    }
+
     public static DeserializationResult<GitPullRequestsResponse> DeserializeGitPullRequestsResponse(String json)
     {
         if (!TryGetUtf8ByteArrayFromString(json, out var bytes, out var bytesWritten))
@@ -41,7 +84,9 @@ partial class APISerializer
         else
         {
             Deserialize(ref reader, result);
-            status = DeserializationStatus.Success;
+            status = result.Value is null
+                ? DeserializationStatus.ModelValidationFailure
+                : DeserializationStatus.Success;
         }
 
         return new DeserializationResult<GitPullRequestsResponse>
@@ -62,5 +107,6 @@ public enum DeserializationStatus
 {
     None,
     Success,
-    Failure
+    Failure,
+    ModelValidationFailure
 }
