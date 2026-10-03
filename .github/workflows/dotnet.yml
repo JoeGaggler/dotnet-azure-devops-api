@@ -27,20 +27,12 @@ jobs:
         dotnet-version: 10.x
     - name: Version (release)
       run: |
-        OLD=$(yq ".Project.PropertyGroup[0].Version" -p xml -o xml src/nuget/Pingmint.AzureDevOps.csproj)
-        NEW="$OLD.${COUNTER}" yq ".Project.PropertyGroup[0].Version = env(NEW)" -p xml -o xml -i src/nuget/Pingmint.AzureDevOps.csproj
+        OLD=$(yq ".Project.PropertyGroup.Version" -p xml -o xml src/nuget/Pingmint.AzureDevOps.csproj)
+        NEW="$OLD.${COUNTER}" yq ".Project.PropertyGroup.Version = env(NEW)" -p xml -o xml -i src/nuget/Pingmint.AzureDevOps.csproj
         cat src/nuget/Pingmint.AzureDevOps.csproj
       env:
         COUNTER: ${{ github.run_number }}
       if: github.ref == 'refs/heads/main'
-    - name: Version (pre-release)
-      run: |
-        OLD=$(yq ".Project.PropertyGroup[0].Version" -p xml -o xml src/nuget/Pingmint.AzureDevOps.csproj)
-        NEW="$OLD.${COUNTER}-alpha" yq ".Project.PropertyGroup[0].Version = env(NEW)" -p xml -o xml -i src/nuget/Pingmint.AzureDevOps.csproj
-        cat src/nuget/Pingmint.AzureDevOps.csproj
-      env:
-        COUNTER: ${{ github.run_number }}
-      if: github.ref != 'refs/heads/main'
     - name: Restore dependencies
       run: dotnet restore src/nuget
     - name: Build
