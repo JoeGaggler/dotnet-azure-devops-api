@@ -22,6 +22,40 @@ public sealed class APISerializerTests
     }
 
     [TestMethod]
+    public void DeserializeGitRepositoriesResponseWithMalformedPayloadReturnsFailure()
+    {
+        var result = APISerializer.DeserializeGitRepositoriesResponse("{\"value\":"u8);
+
+        Assert.AreEqual(DeserializationStatus.Failure, result.Status);
+    }
+
+    [TestMethod]
+    public void ListRepositoriesRequestIncludesDocumentedOptionalParameters()
+    {
+        using var request = HttpRequestFactory.ListRepositoriesRequest(
+            "org name",
+            "project name",
+            includeAllUrls: true,
+            includeHidden: false,
+            includeLinks: true);
+
+        Assert.AreEqual(HttpMethod.Get, request.Method);
+        Assert.AreEqual(
+            "https://dev.azure.com/org%20name/project%20name/_apis/git/repositories?includeAllUrls=true&includeHidden=false&includeLinks=true&api-version=7.2-preview.2",
+            request.RequestUri!.AbsoluteUri);
+    }
+
+    [TestMethod]
+    public void ListRepositoriesRequestOmitsUnsetOptionalParametersAndProject()
+    {
+        using var request = HttpRequestFactory.ListRepositoriesRequest("organization");
+
+        Assert.AreEqual(
+            "https://dev.azure.com/organization/_apis/git/repositories?api-version=7.2-preview.2",
+            request.RequestUri!.AbsoluteUri);
+    }
+
+    [TestMethod]
     public void DeserializeGitRepositoryWithoutIdReturnsModelValidationFailure()
     {
         var result = APISerializer.DeserializeGitRepository("{}"u8);
@@ -35,6 +69,25 @@ public sealed class APISerializerTests
         var result = APISerializer.DeserializeGitRepository("[]"u8);
 
         Assert.AreEqual(DeserializationStatus.Failure, result.Status);
+    }
+
+    [TestMethod]
+    public void DeserializeGitRepositoryWithMalformedPayloadReturnsFailure()
+    {
+        var result = APISerializer.DeserializeGitRepository("{\"id\":"u8);
+
+        Assert.AreEqual(DeserializationStatus.Failure, result.Status);
+    }
+
+    [TestMethod]
+    public void GetRepositoryRequestIncludesDocumentedUriAndOptionalProject()
+    {
+        using var request = HttpRequestFactory.GetRepositoryRequest("org name", "repo/id", "project name");
+
+        Assert.AreEqual(HttpMethod.Get, request.Method);
+        Assert.AreEqual(
+            "https://dev.azure.com/org%20name/project%20name/_apis/git/repositories/repo%2Fid?api-version=7.2-preview.2",
+            request.RequestUri!.AbsoluteUri);
     }
 
     [TestMethod]

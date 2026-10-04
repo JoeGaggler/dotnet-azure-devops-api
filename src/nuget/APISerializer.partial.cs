@@ -30,20 +30,23 @@ partial class APISerializer
         var status = DeserializationStatus.None;
         var reader = new Utf8JsonReader(json);
 
-        if (!reader.Read())
+        try
+        {
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+            {
+                status = DeserializationStatus.Failure;
+            }
+            else
+            {
+                Deserialize(ref reader, result);
+                status = result.Value is null
+                    ? DeserializationStatus.ModelValidationFailure
+                    : DeserializationStatus.Success;
+            }
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
         {
             status = DeserializationStatus.Failure;
-        }
-        else if (reader.TokenType != JsonTokenType.StartObject)
-        {
-            status = DeserializationStatus.Failure;
-        }
-        else
-        {
-            Deserialize(ref reader, result);
-            status = result.Value is null
-                ? DeserializationStatus.ModelValidationFailure
-                : DeserializationStatus.Success;
         }
 
         return new DeserializationResult<GitRepositoriesResponse>
@@ -73,20 +76,23 @@ partial class APISerializer
         var status = DeserializationStatus.None;
         var reader = new Utf8JsonReader(json);
 
-        if (!reader.Read())
+        try
+        {
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+            {
+                status = DeserializationStatus.Failure;
+            }
+            else
+            {
+                Deserialize(ref reader, result);
+                status = result.Id is null
+                    ? DeserializationStatus.ModelValidationFailure
+                    : DeserializationStatus.Success;
+            }
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
         {
             status = DeserializationStatus.Failure;
-        }
-        else if (reader.TokenType != JsonTokenType.StartObject)
-        {
-            status = DeserializationStatus.Failure;
-        }
-        else
-        {
-            Deserialize(ref reader, result);
-            status = result.Id is null
-                ? DeserializationStatus.ModelValidationFailure
-                : DeserializationStatus.Success;
         }
 
         return new DeserializationResult<GitRepository>

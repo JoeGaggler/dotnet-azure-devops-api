@@ -57,6 +57,7 @@ Inspect the current versions of these files before editing:
 
 - `src/nuget/APISerializer.txt`
 - `src/nuget/APISerializer.partial.cs`
+- `src/nuget/Client.cs`
 - `src/nuget/HttpRequestFactory.cs`
 - `doc/azure-devops-rest-api.md`
 - the closest test under `src/test/`
@@ -75,6 +76,7 @@ Derive names from the documented operation and existing repository conventions:
 - request factory: `<OperationName>Request`, such as `GetPullRequestsByProjectRequest`
 - response envelope: a descriptive plural response type when the wire response contains `value`
 - convenience method: `Deserialize<ResponseType>`
+- client method: a behavior-oriented async name such as `ListGitRepositoriesAsync` or `GetGitPullRequestAsync`
 - integration test: a behavior name ending in `Async`
 
 Reuse an existing model when its documented wire shape is the same. Extend its definition if the new endpoint documents additional fields. 
@@ -176,7 +178,22 @@ Return `DeserializationStatus.Failure` when UTF-8 conversion fails, the payload 
 
 Keep shared result/status types and UTF-8 conversion helpers single-instance; do not duplicate them per endpoint.
 
-### 6. Update the API Catalog
+### 6. Add the Client Request Method
+
+In `src/nuget/Client.cs`, add a public static async method for the operation following the `ListGitRepositoriesAsync` pattern. The method must:
+
+- accept an `HttpClient`, the operation's `HttpRequestMessage`, and a `CancellationToken`
+- send the supplied request with the supplied cancellation token
+- catch request exceptions and return `ClientStatus.Exception` with the original exception
+- read and deserialize a successful response with the operation's public byte-oriented convenience deserializer
+- return `ClientStatus.Success` with the deserialized model only when deserialization succeeds
+- return `ClientStatus.Exception` when deserialization fails
+- return `ClientStatus.Failed` when the HTTP response does not have the operation's documented success status
+- dispose the `HttpResponseMessage` after reading it
+
+Reuse the existing `ClientResult<T>` and `ClientStatus` types. Do not duplicate transport or result types per endpoint.
+
+### 7. Update the API Catalog
 
 Add the operation to `doc/azure-devops-rest-api.md` under the correct service/resource headings. Record:
 
@@ -188,7 +205,7 @@ Add the operation to `doc/azure-devops-rest-api.md` under the correct service/re
 
 Use the selected operation URL, not a nearby Microsoft Learn page. In catalog refresh mode, update every catalog entry's documentation URL and `Version` to the values verified from its latest-release page, even when no code changes are required.
 
-### 7. Add Focused Coverage
+### 8. Add Focused Coverage
 
 Classify each operation by its effect on Azure DevOps resources before writing tests. Only read-only operations may be invoked against the configured Azure DevOps instance. Do not invoke other operations that create, update, or delete resources, including creating branches, pushing commits, or editing work items. This restriction also applies to prerequisite and setup calls; never mutate resources just to obtain test data.
 
@@ -198,21 +215,21 @@ For read-only operations, add or extend an integration test under `src/test/` th
 - has `[TestCategory("Integration")]`
 - creates the request through `HttpRequestFactory`
 - applies authorization through `AddAuthorizationForAzureDevOps`
-- sends with `TestContext.CancellationToken`
-- reports the response body when HTTP status is unsuccessful
-- calls the public byte-oriented convenience deserializer
-- asserts `DeserializationStatus.Success`
-- compares deserialized values with the raw JSON response for scalar, nested object, and collection fields
+- executes the request through the operation's public `Client` method using `TestContext.CancellationToken`
+- asserts `ClientStatus.Success`
+- validates required and optional scalar, nested object, and collection fields directly on the returned model when present
+
+Do not parse the raw response JSON in integration tests or recursively compare it with the deserialized model. Do not add or use `AssertDeserializedValue` or equivalent raw-JSON comparison helpers. Use available `Client` methods for read-only prerequisite calls as well as the operation under test.
 
 For every other resource-changing operation, test as much as possible without sending the operation: verify the factory's HTTP method, route, API version, query parameters, and serialized request body against the documentation; exercise the public convenience deserializer and model assertions with representative response JSON. Any integration test for that operation must call `Assert.Inconclusive` after these local checks, before sending the mutating request. Do not send it even when credentials and suitable resources are available. Keep these checks independent of live Azure DevOps data when possible.
 
 Add focused non-integration coverage for each API-specific model assertion. Verify that violating the assertion returns `DeserializationStatus.ModelValidationFailure`, while malformed or structurally invalid payloads continue to return `DeserializationStatus.Failure`.
 
-Reuse existing recursive JSON assertion helpers when practical instead of duplicating them.
+Reuse focused model assertion helpers when practical instead of duplicating them.
 
 Integration tests may depend only on `AZURE_DEVOPS_ORGANIZATION` and `AZURE_DEVOPS_PROJECT`. Do not introduce environment variables for endpoint-specific route inputs or test data. Derive every additional value from read-only API calls in the test setup, such as listing resources and selecting a returned ID before exercising a get-by-ID operation. If the prerequisite call returns no suitable resource, make the test inconclusive rather than failed.
 
-### 8. Validate
+### 9. Validate
 
 Run validation in this order:
 
@@ -233,6 +250,7 @@ Summarize:
 - endpoint or endpoints and exact API versions implemented or refreshed
 - latest REST documentation release selected and how it was verified in catalog refresh mode
 - request factory methods added, updated, or confirmed current
+- client request methods added, updated, or confirmed current
 - response/deserializer types added, updated, reused, or confirmed current
 - catalog documentation and tests updated
 - generator/build/test results for every processed operation, including skipped integration tests

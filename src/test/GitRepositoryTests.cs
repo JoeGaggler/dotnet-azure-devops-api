@@ -1,6 +1,3 @@
-using System.Text;
-using System.Text.Json;
-
 namespace Pingmint.AzureDevOps.Tests;
 
 [TestClass]
@@ -18,22 +15,51 @@ public sealed class GitRepositoryTests : AzureDevOpsIntegrationTestBase
         AddAuthorizationForAzureDevOps(request);
 
         using var client = new HttpClient();
-        using var response = await client.SendAsync(request, TestContext.CancellationToken);
-        var payload = await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);
+        var response = await Client.ListGitRepositoriesAsync(client, request, TestContext.CancellationToken);
 
-        Assert.IsTrue(
-            response.IsSuccessStatusCode,
-            $"Azure DevOps returned {(int)response.StatusCode} {response.ReasonPhrase}: {Encoding.UTF8.GetString(payload)}");
+        Assert.AreEqual(ClientStatus.Success, response.Status);
 
-        var deserializationResult = APISerializer.DeserializeGitRepositoriesResponse(payload);
-        Assert.AreEqual(DeserializationStatus.Success, deserializationResult.Status);
-        Assert.IsNotNull(deserializationResult.Value.Value);
+        var model = response.Value;
+        Assert.IsNotNull(model.Value);
 
-        using var document = JsonDocument.Parse(payload);
-        GitPullRequestTests.AssertDeserializedValue(
-            document.RootElement,
-            deserializationResult.Value,
-            "repositories");
+        Assert.IsNotNull(model.Count);
+        Assert.IsNotNull(model.Value);
+        Assert.HasCount(model.Count.Value, model.Value);
+
+        foreach (var repository in model.Value)
+        {
+            Assert.IsNotNull(repository.Id);
+            Assert.IsNotNull(repository.Name);
+            Assert.IsNotNull(repository.Url);
+            Assert.IsNotNull(repository.Project);
+            Assert.IsNotNull(repository.Project.Id);
+            Assert.IsNotNull(repository.Project.Name);
+
+            if (repository.CreationDate is not null)
+                Assert.IsTrue(DateTimeOffset.TryParse(repository.CreationDate, out _));
+            if (repository.DefaultBranch is not null)
+                Assert.IsFalse(string.IsNullOrWhiteSpace(repository.DefaultBranch));
+            if (repository.Size is not null)
+                Assert.IsGreaterThanOrEqualTo(0L, repository.Size.Value);
+            if (repository.RemoteUrl is not null)
+                Assert.IsTrue(Uri.TryCreate(repository.RemoteUrl, UriKind.Absolute, out _));
+            if (repository.SshUrl is not null)
+                Assert.IsFalse(string.IsNullOrWhiteSpace(repository.SshUrl));
+            if (repository.WebUrl is not null)
+                Assert.IsTrue(Uri.TryCreate(repository.WebUrl, UriKind.Absolute, out _));
+
+            if (repository.ValidRemoteUrls is not null)
+            {
+                foreach (var remoteUrl in repository.ValidRemoteUrls)
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(remoteUrl));
+            }
+
+            if (repository.Links?.Links is not null)
+            {
+                foreach (var link in repository.Links.Links.Values)
+                    Assert.IsNotNull(link.Href);
+            }
+        }
     }
 
     [TestMethod]
@@ -44,18 +70,11 @@ public sealed class GitRepositoryTests : AzureDevOpsIntegrationTestBase
         using var listRequest = HttpRequestFactory.ListRepositoriesRequest(Organization, Project);
         AddAuthorizationForAzureDevOps(listRequest);
 
-        using var listResponse = await client.SendAsync(listRequest, TestContext.CancellationToken);
-        var listPayload = await listResponse.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);
+        var listResponse = await Client.ListGitRepositoriesAsync(client, listRequest, TestContext.CancellationToken);
+        Assert.AreEqual(ClientStatus.Success, listResponse.Status);
+        Assert.IsNotNull(listResponse.Value.Value);
 
-        Assert.IsTrue(
-            listResponse.IsSuccessStatusCode,
-            $"Azure DevOps returned {(int)listResponse.StatusCode} {listResponse.ReasonPhrase}: {Encoding.UTF8.GetString(listPayload)}");
-
-        var listResult = APISerializer.DeserializeGitRepositoriesResponse(listPayload);
-        Assert.AreEqual(DeserializationStatus.Success, listResult.Status);
-        Assert.IsNotNull(listResult.Value.Value);
-
-        var repositoryId = listResult.Value.Value
+        var repositoryId = listResponse.Value.Value
             .Select(repository => repository.Id)
             .FirstOrDefault(id => id is not null);
         if (repositoryId is null)
@@ -67,21 +86,26 @@ public sealed class GitRepositoryTests : AzureDevOpsIntegrationTestBase
         using var request = HttpRequestFactory.GetRepositoryRequest(Organization, repositoryId, Project);
         AddAuthorizationForAzureDevOps(request);
 
-        using var response = await client.SendAsync(request, TestContext.CancellationToken);
-        var payload = await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);
+        var response = await Client.GetGitRepositoryAsync(client, request, TestContext.CancellationToken);
+        Assert.AreEqual(ClientStatus.Success, response.Status);
 
-        Assert.IsTrue(
-            response.IsSuccessStatusCode,
-            $"Azure DevOps returned {(int)response.StatusCode} {response.ReasonPhrase}: {Encoding.UTF8.GetString(payload)}");
+        var repository = response.Value;
+        Assert.IsNotNull(repository.Id);
+        Assert.IsNotNull(repository.Name);
+        Assert.IsNotNull(repository.Url);
+        Assert.IsNotNull(repository.Project);
+        Assert.IsNotNull(repository.Project.Id);
+        Assert.IsNotNull(repository.Project.Name);
 
-        var deserializationResult = APISerializer.DeserializeGitRepository(payload);
-        Assert.AreEqual(DeserializationStatus.Success, deserializationResult.Status);
-        Assert.IsNotNull(deserializationResult.Value);
-
-        using var document = JsonDocument.Parse(payload);
-        GitPullRequestTests.AssertDeserializedValue(
-            document.RootElement,
-            deserializationResult.Value,
-            "repository");
+        if (repository.CreationDate is not null)
+            Assert.IsTrue(DateTimeOffset.TryParse(repository.CreationDate, out _));
+        if (repository.Size is not null)
+            Assert.IsGreaterThanOrEqualTo(0L, repository.Size.Value);
+        if (repository.RemoteUrl is not null)
+            Assert.IsTrue(Uri.TryCreate(repository.RemoteUrl, UriKind.Absolute, out _));
+        if (repository.SshUrl is not null)
+            Assert.IsFalse(string.IsNullOrWhiteSpace(repository.SshUrl));
+        if (repository.WebUrl is not null)
+            Assert.IsTrue(Uri.TryCreate(repository.WebUrl, UriKind.Absolute, out _));
     }
 }
