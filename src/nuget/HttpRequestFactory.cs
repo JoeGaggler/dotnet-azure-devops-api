@@ -115,6 +115,37 @@ public static class HttpRequestFactory
     }
 
     /// <summary>
+    /// Gets a build.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="project">The project ID or project name.</param>
+    /// <param name="buildId">The ID of the build to retrieve.</param>
+    /// <param name="propertyFilters">The optional property filters.</param>
+    /// <returns>An HTTP request message for the Builds - Get operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.8.
+    /// See <see href="https://learn.microsoft.com/en-us/rest/api/azure/devops/build/builds/get?view=azure-devops-rest-7.2">the official Azure DevOps REST API documentation</see>.
+    /// </remarks>
+    public static HttpRequestMessage GetBuildRequest(
+        string organization,
+        string project,
+        int buildId,
+        string? propertyFilters = null)
+    {
+        var queryParameters = new List<string>();
+
+        if (propertyFilters is not null)
+            queryParameters.Add($"propertyFilters={Uri.EscapeDataString(propertyFilters)}");
+
+        queryParameters.Add("api-version=7.2-preview.8");
+
+        var organizationSegment = Uri.EscapeDataString(organization);
+        var projectSegment = Uri.EscapeDataString(project);
+        var url = $"https://dev.azure.com/{organizationSegment}/{projectSegment}/_apis/build/builds/{buildId.ToString(CultureInfo.InvariantCulture)}?{string.Join('&', queryParameters)}";
+        return new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+    }
+
+    /// <summary>
     /// Queries the specified repository for its refs.
     /// </summary>
     /// <param name="organization">The name of the Azure DevOps organization.</param>

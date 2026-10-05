@@ -15,6 +15,19 @@ public static class Client
             cancellationToken);
     }
 
+    public static async Task<ClientResult<Build>> GetBuildAsync(
+        HttpClient client,
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        return await SendAndDeserializeAsync<Build>(
+            client,
+            request,
+            System.Net.HttpStatusCode.OK,
+            static bytes => APISerializer.DeserializeBuild(bytes),
+            cancellationToken);
+    }
+
     public static async Task<ClientResult<GitRef>> UpdateGitRefAsync(
         HttpClient client,
         HttpRequestMessage request,

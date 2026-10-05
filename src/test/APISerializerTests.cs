@@ -43,6 +43,43 @@ public sealed class APISerializerTests
     }
 
     [TestMethod]
+    public void DeserializeBuildWithoutIdReturnsModelValidationFailure()
+    {
+        var result = APISerializer.DeserializeBuild("{\"buildNumber\":\"1\"}"u8);
+
+        Assert.AreEqual(DeserializationStatus.ModelValidationFailure, result.Status);
+    }
+
+    [TestMethod]
+    public void DeserializeBuildWithMalformedPayloadReturnsFailure()
+    {
+        var empty = APISerializer.DeserializeBuild(ReadOnlySpan<Byte>.Empty);
+        var invalidRoot = APISerializer.DeserializeBuild("[]"u8);
+        var malformed = APISerializer.DeserializeBuild("{\"id\":"u8);
+
+        Assert.AreEqual(DeserializationStatus.Failure, empty.Status);
+        Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
+        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+    }
+
+    [TestMethod]
+    public void DeserializeBuildWithDocumentedFieldsReturnsSuccess()
+    {
+        var result = APISerializer.DeserializeBuild(
+            """{"id":42,"buildNumber":"2026.10.05.1","status":"completed","result":"succeeded","project":{"id":"project-id","name":"Project"},"definition":{"id":4,"name":"CI"},"repository":{"id":"repository-id"},"tags":["release"]}"""u8);
+
+        Assert.AreEqual(DeserializationStatus.Success, result.Status);
+        Assert.AreEqual(42, result.Value.Id);
+        Assert.AreEqual("2026.10.05.1", result.Value.BuildNumber);
+        Assert.AreEqual("Project", result.Value.Project!.Name);
+        Assert.AreEqual(4, result.Value.Definition!.Id);
+        Assert.AreEqual("repository-id", result.Value.Repository!.Id);
+        Assert.AreEqual("completed", result.Value.Status);
+        Assert.AreEqual("succeeded", result.Value.Result);
+        CollectionAssert.AreEqual(new[] { "release" }, result.Value.Tags);
+    }
+
+    [TestMethod]
     public void ListBuildsRequestIncludesDocumentedFiltersAndEscapesValues()
     {
         var maxTime = new DateTimeOffset(2026, 10, 5, 12, 30, 0, TimeSpan.Zero);
@@ -85,6 +122,26 @@ public sealed class APISerializerTests
         Assert.AreEqual(
             "https://dev.azure.com/organization/project/_apis/build/builds?api-version=7.2-preview.8",
             request.RequestUri!.AbsoluteUri);
+    }
+
+    [TestMethod]
+    public void GetBuildRequestIncludesDocumentedRouteAndEscapesOptionalPropertyFilters()
+    {
+        using var request = HttpRequestFactory.GetBuildRequest(
+            "org name",
+            "project name",
+            42,
+            "tag one&tag/two");
+
+        Assert.AreEqual(HttpMethod.Get, request.Method);
+        Assert.AreEqual(
+            "https://dev.azure.com/org%20name/project%20name/_apis/build/builds/42?propertyFilters=tag%20one%26tag%2Ftwo&api-version=7.2-preview.8",
+            request.RequestUri!.AbsoluteUri);
+
+        using var minimalRequest = HttpRequestFactory.GetBuildRequest("organization", "project", 7);
+        Assert.AreEqual(
+            "https://dev.azure.com/organization/project/_apis/build/builds/7?api-version=7.2-preview.8",
+            minimalRequest.RequestUri!.AbsoluteUri);
     }
 
     [TestMethod]

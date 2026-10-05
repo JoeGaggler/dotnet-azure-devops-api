@@ -19,6 +19,15 @@ Version:       7.2-preview.8
 Request Method: ListBuildsRequest
 Response Model: Pingmint.AzureDevOps.BuildsResponse
 
+##### Get Build
+
+Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/build/builds/get?view=azure-devops-rest-7.2
+Endpoint:      GET https://dev.azure.com/{organization}/{project}/_apis/build/builds/{buildId}
+Version:       7.2-preview.8
+
+Request Method: GetBuildRequest
+Response Model: Pingmint.AzureDevOps.Build
+
 ### Git
 
 #### Refs

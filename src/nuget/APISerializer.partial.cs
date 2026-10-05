@@ -56,6 +56,52 @@ partial class APISerializer
         };
     }
 
+    public static DeserializationResult<Build> DeserializeBuild(String json)
+    {
+        if (!TryGetUtf8ByteArrayFromString(json, out var bytes, out var bytesWritten))
+        {
+            return new DeserializationResult<Build>
+            {
+                Status = DeserializationStatus.Failure,
+                Value = new Build(),
+            };
+        }
+
+        return DeserializeBuild(bytes.AsSpan(0, bytesWritten));
+    }
+
+    public static DeserializationResult<Build> DeserializeBuild(ReadOnlySpan<Byte> json)
+    {
+        var result = new Build();
+        var status = DeserializationStatus.None;
+        var reader = new Utf8JsonReader(json);
+
+        try
+        {
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+            {
+                status = DeserializationStatus.Failure;
+            }
+            else
+            {
+                Deserialize(ref reader, result);
+                status = result.Id is null
+                    ? DeserializationStatus.ModelValidationFailure
+                    : DeserializationStatus.Success;
+            }
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        {
+            status = DeserializationStatus.Failure;
+        }
+
+        return new DeserializationResult<Build>
+        {
+            Status = status,
+            Value = result,
+        };
+    }
+
     public static DeserializationResult<GitRef> DeserializeGitRef(String json)
     {
         if (!TryGetUtf8ByteArrayFromString(json, out var bytes, out var bytesWritten))
