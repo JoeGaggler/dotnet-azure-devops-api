@@ -82,7 +82,9 @@ public static partial class APISerializer
 	private static readonly JsonEncodedText JsonEncText_mergeStatus = JsonEncodedText.Encode("mergeStatus");
 	private static readonly JsonEncodedText JsonEncText_mergeStrategy = JsonEncodedText.Encode("mergeStrategy");
 	private static readonly JsonEncodedText JsonEncText_name = JsonEncodedText.Encode("name");
+	private static readonly JsonEncodedText JsonEncText_newObjectId = JsonEncodedText.Encode("newObjectId");
 	private static readonly JsonEncodedText JsonEncText_objectId = JsonEncodedText.Encode("objectId");
+	private static readonly JsonEncodedText JsonEncText_oldObjectId = JsonEncodedText.Encode("oldObjectId");
 	private static readonly JsonEncodedText JsonEncText_parentRepository = JsonEncodedText.Encode("parentRepository");
 	private static readonly JsonEncodedText JsonEncText_parents = JsonEncodedText.Encode("parents");
 	private static readonly JsonEncodedText JsonEncText_peeledObjectId = JsonEncodedText.Encode("peeledObjectId");
@@ -91,6 +93,7 @@ public static partial class APISerializer
 	private static readonly JsonEncodedText JsonEncText_pullRequestId = JsonEncodedText.Encode("pullRequestId");
 	private static readonly JsonEncodedText JsonEncText_remoteUrl = JsonEncodedText.Encode("remoteUrl");
 	private static readonly JsonEncodedText JsonEncText_repository = JsonEncodedText.Encode("repository");
+	private static readonly JsonEncodedText JsonEncText_repositoryId = JsonEncodedText.Encode("repositoryId");
 	private static readonly JsonEncodedText JsonEncText_reviewers = JsonEncodedText.Encode("reviewers");
 	private static readonly JsonEncodedText JsonEncText_reviewerUrl = JsonEncodedText.Encode("reviewerUrl");
 	private static readonly JsonEncodedText JsonEncText_revision = JsonEncodedText.Encode("revision");
@@ -516,6 +519,92 @@ public static partial class APISerializer
 						if (reader.TokenType == JsonTokenType.Null) { obj.Count = null; break; }
 						if (reader.TokenType == JsonTokenType.Number) { obj.Count = reader.GetInt32(); break; }
 						throw new InvalidOperationException($"unexpected token type for Count: {reader.TokenType} ");
+					}
+
+					SkipUnknownPropertyName(ref reader);
+					break;
+				}
+				case JsonTokenType.EndObject: { return; }
+				default: { reader.Skip(); break; }
+			}
+		}
+	}
+	public static void Serialize(Utf8JsonWriter writer, Pingmint.AzureDevOps.GitRefUpdate? value)
+	{
+		if (value is null) { writer.WriteNullValue(); return; }
+		writer.WriteStartObject();
+		if (value.IsLocked is { } localIsLocked)
+		{
+			writer.WritePropertyName(JsonEncText_isLocked);
+			writer.WriteBooleanValue(localIsLocked);
+		}
+		if (value.Name is { } localName)
+		{
+			writer.WritePropertyName(JsonEncText_name);
+			writer.WriteStringValue(localName);
+		}
+		if (value.NewObjectId is { } localNewObjectId)
+		{
+			writer.WritePropertyName(JsonEncText_newObjectId);
+			writer.WriteStringValue(localNewObjectId);
+		}
+		if (value.OldObjectId is { } localOldObjectId)
+		{
+			writer.WritePropertyName(JsonEncText_oldObjectId);
+			writer.WriteStringValue(localOldObjectId);
+		}
+		if (value.RepositoryId is { } localRepositoryId)
+		{
+			writer.WritePropertyName(JsonEncText_repositoryId);
+			writer.WriteStringValue(localRepositoryId);
+		}
+		writer.WriteEndObject();
+	}
+
+	public static void Deserialize(ref Utf8JsonReader reader, Pingmint.AzureDevOps.GitRefUpdate obj)
+	{
+		while (true)
+		{
+			if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+			switch (reader.TokenType)
+			{
+				case JsonTokenType.PropertyName:
+				{
+					if (reader.ValueTextEquals("isLocked"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.IsLocked = null; break; }
+						if (reader.TokenType == JsonTokenType.True) { obj.IsLocked = true; break; }
+						if (reader.TokenType == JsonTokenType.False) { obj.IsLocked = false; break; }
+						throw new InvalidOperationException($"unexpected token type for IsLocked: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("name"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.Name = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.Name = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for Name: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("newObjectId"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.NewObjectId = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.NewObjectId = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for NewObjectId: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("oldObjectId"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.OldObjectId = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.OldObjectId = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for OldObjectId: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("repositoryId"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.RepositoryId = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.RepositoryId = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for RepositoryId: {reader.TokenType} ");
 					}
 
 					SkipUnknownPropertyName(ref reader);
@@ -3300,6 +3389,14 @@ public sealed partial record class GitRefsResponse
 {
 	public List<Pingmint.AzureDevOps.GitRef>? Value { get; set; }
 	public int? Count { get; set; }
+}
+public sealed partial record class GitRefUpdate
+{
+	public bool? IsLocked { get; set; }
+	public string? Name { get; set; }
+	public string? NewObjectId { get; set; }
+	public string? OldObjectId { get; set; }
+	public string? RepositoryId { get; set; }
 }
 public sealed partial record class GitRepositoriesResponse
 {

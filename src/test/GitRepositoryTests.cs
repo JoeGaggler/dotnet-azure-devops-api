@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Pingmint.AzureDevOps.Tests;
 
 [TestClass]
@@ -173,5 +175,33 @@ public sealed class GitRepositoryTests : AzureDevOpsIntegrationTestBase
                 }
             }
         }
+    }
+
+    [TestMethod]
+    [TestCategory("Integration")]
+    public async Task UpdateRefAsync()
+    {
+        using var request = HttpRequestFactory.UpdateRefRequest(
+            Organization,
+            "repository-id",
+            "refs/heads/example",
+            new GitRefUpdate { IsLocked = true },
+            Project);
+
+        Assert.AreEqual(HttpMethod.Patch, request.Method);
+        Assert.AreEqual(
+            $"https://dev.azure.com/{Uri.EscapeDataString(Organization)}/{Uri.EscapeDataString(Project)}/_apis/git/repositories/repository-id/refs?filter=refs%2Fheads%2Fexample&api-version=7.2-preview.2",
+            request.RequestUri!.AbsoluteUri);
+
+        using var body = JsonDocument.Parse(await request.Content!.ReadAsByteArrayAsync(TestContext.CancellationToken));
+        Assert.IsTrue(body.RootElement.GetProperty("isLocked").GetBoolean());
+
+        var response = APISerializer.DeserializeGitRef(
+            """{"name":"refs/heads/example","objectId":"commit-id","isLocked":true}"""u8);
+        Assert.AreEqual(DeserializationStatus.Success, response.Status);
+        Assert.AreEqual("refs/heads/example", response.Value.Name);
+        Assert.AreEqual("commit-id", response.Value.ObjectId);
+
+        Assert.Inconclusive("Update Ref changes Azure DevOps repository state; the PATCH request is not sent.");
     }
 }

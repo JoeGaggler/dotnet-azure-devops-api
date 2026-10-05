@@ -88,6 +88,79 @@ public sealed class APISerializerTests
     }
 
     [TestMethod]
+    public void DeserializeGitRefWithoutNameReturnsModelValidationFailure()
+    {
+        var result = APISerializer.DeserializeGitRef("{\"isLocked\":true}"u8);
+
+        Assert.AreEqual(DeserializationStatus.ModelValidationFailure, result.Status);
+    }
+
+    [TestMethod]
+    public void DeserializeGitRefWithMalformedPayloadReturnsFailure()
+    {
+        var malformed = APISerializer.DeserializeGitRef("{\"name\":"u8);
+        var invalidRoot = APISerializer.DeserializeGitRef("[]"u8);
+
+        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+        Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
+    }
+
+    [TestMethod]
+    public void DeserializeGitRefWithDocumentedResponseReturnsSuccess()
+    {
+        var result = APISerializer.DeserializeGitRef(
+            """{"name":"refs/heads/master","objectId":"commit-id","isLocked":true,"isLockedBy":{"id":"identity-id"},"creator":{"displayName":"Dev"},"url":"https://dev.azure.com/org/project/_apis/git/refs"}"""u8);
+
+        Assert.AreEqual(DeserializationStatus.Success, result.Status);
+        Assert.AreEqual("refs/heads/master", result.Value.Name);
+        Assert.AreEqual("commit-id", result.Value.ObjectId);
+        Assert.IsTrue(result.Value.IsLocked);
+        Assert.AreEqual("identity-id", result.Value.IsLockedBy!.Id);
+    }
+
+    [TestMethod]
+    public async Task UpdateRefRequestIncludesDocumentedMethodUriAndBody()
+    {
+        using var request = HttpRequestFactory.UpdateRefRequest(
+            "org name",
+            "repo/id",
+            "heads/main",
+            new GitRefUpdate
+            {
+                IsLocked = true,
+                Name = "refs/heads/main",
+                NewObjectId = "new-object-id",
+                OldObjectId = "old-object-id",
+                RepositoryId = "repository-id",
+            },
+            "project name",
+            "project/id");
+
+        Assert.AreEqual(HttpMethod.Patch, request.Method);
+        Assert.AreEqual(
+            "https://dev.azure.com/org%20name/project%20name/_apis/git/repositories/repo%2Fid/refs?filter=heads%2Fmain&projectId=project%2Fid&api-version=7.2-preview.2",
+            request.RequestUri!.AbsoluteUri);
+        Assert.AreEqual("application/json", request.Content!.Headers.ContentType!.MediaType);
+
+        using var body = JsonDocument.Parse(await request.Content.ReadAsByteArrayAsync());
+        Assert.IsTrue(body.RootElement.GetProperty("isLocked").GetBoolean());
+        Assert.AreEqual("refs/heads/main", body.RootElement.GetProperty("name").GetString());
+        Assert.AreEqual("new-object-id", body.RootElement.GetProperty("newObjectId").GetString());
+        Assert.AreEqual("old-object-id", body.RootElement.GetProperty("oldObjectId").GetString());
+        Assert.AreEqual("repository-id", body.RootElement.GetProperty("repositoryId").GetString());
+        Assert.AreEqual(5, body.RootElement.EnumerateObject().Count());
+
+        using var minimalRequest = HttpRequestFactory.UpdateRefRequest(
+            "organization",
+            "repository",
+            "heads/main",
+            new GitRefUpdate { IsLocked = false });
+        Assert.AreEqual(
+            "https://dev.azure.com/organization/_apis/git/repositories/repository/refs?filter=heads%2Fmain&api-version=7.2-preview.2",
+            minimalRequest.RequestUri!.AbsoluteUri);
+    }
+
+    [TestMethod]
     public void DeserializeGitRepositoriesResponseWithInvalidRootReturnsFailure()
     {
         var result = APISerializer.DeserializeGitRepositoriesResponse("[]"u8);

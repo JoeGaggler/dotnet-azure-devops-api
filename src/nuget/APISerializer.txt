@@ -35,6 +35,13 @@ Pingmint.AzureDevOps.GitRefsResponse
 - "value" => Value : [Pingmint.AzureDevOps.GitRef]
 - "count" => Count : int
 
+Pingmint.AzureDevOps.GitRefUpdate
+- "isLocked" => IsLocked : bool
+- "name" => Name : string
+- "newObjectId" => NewObjectId : string
+- "oldObjectId" => OldObjectId : string
+- "repositoryId" => RepositoryId : string
+
 Pingmint.AzureDevOps.GitRepositoriesResponse
 - "count" => Count : int
 - "value" => Value : [Pingmint.AzureDevOps.GitRepository]

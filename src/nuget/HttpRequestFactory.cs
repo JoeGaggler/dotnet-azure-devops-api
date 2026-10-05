@@ -78,6 +78,53 @@ public static class HttpRequestFactory
     }
 
     /// <summary>
+    /// Locks or unlocks a branch.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="repositoryId">The name or ID of the repository.</param>
+    /// <param name="filter">The name of the branch to lock or unlock.</param>
+    /// <param name="update">The Git ref update properties.</param>
+    /// <param name="project">The project ID or project name. This parameter is optional.</param>
+    /// <param name="projectId">The ID or name of the team project. This parameter is optional when the repository ID is specified.</param>
+    /// <returns>An HTTP request message for the Update Ref operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.2.
+    /// See <see href="https://learn.microsoft.com/en-us/rest/api/azure/devops/git/refs/update-ref?view=azure-devops-rest-7.2&amp;tabs=HTTP">the official Azure DevOps REST API documentation</see>.
+    /// </remarks>
+    public static HttpRequestMessage UpdateRefRequest(
+        string organization,
+        string repositoryId,
+        string filter,
+        GitRefUpdate update,
+        string? project = null,
+        string? projectId = null)
+    {
+        var queryParameters = new List<string>
+        {
+            $"filter={Uri.EscapeDataString(filter)}",
+        };
+
+        if (projectId is not null)
+            queryParameters.Add($"projectId={Uri.EscapeDataString(projectId)}");
+
+        queryParameters.Add("api-version=7.2-preview.2");
+
+        var organizationSegment = Uri.EscapeDataString(organization);
+        var projectSegment = project is null ? null : $"/{Uri.EscapeDataString(project)}";
+        var repositorySegment = Uri.EscapeDataString(repositoryId);
+        var url = $"https://dev.azure.com/{organizationSegment}{projectSegment}/_apis/git/repositories/{repositorySegment}/refs?{string.Join('&', queryParameters)}";
+        var request = new HttpRequestMessage(HttpMethod.Patch, new Uri(url, UriKind.Absolute));
+
+        using var bodyStream = new MemoryStream();
+        using (var writer = new System.Text.Json.Utf8JsonWriter(bodyStream))
+            APISerializer.Serialize(writer, update);
+
+        request.Content = new ByteArrayContent(bodyStream.ToArray());
+        request.Content.Headers.ContentType = new("application/json");
+        return request;
+    }
+
+    /// <summary>
     /// Retrieves Git repositories.
     /// </summary>
     /// <param name="organization">The name of the Azure DevOps organization.</param>
