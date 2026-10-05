@@ -88,6 +88,15 @@ Version:       7.2-preview.2
 Request Method: CreatePullRequestStatusRequest
 Response Model: Pingmint.AzureDevOps.GitPullRequestStatus
 
+##### Delete Pull Request Status
+
+Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-request-statuses/delete?view=azure-devops-rest-7.2&tabs=HTTP
+Endpoint:      DELETE https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryId}/pullRequests/{pullRequestId}/statuses/{statusId}
+Version:       7.2-preview.2
+
+Request Method: DeletePullRequestStatusRequest
+Response Model: None
+
 #### Merges
 
 ##### Get

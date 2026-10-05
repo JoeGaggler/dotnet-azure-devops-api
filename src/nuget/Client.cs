@@ -106,6 +106,45 @@ public static class Client
             cancellationToken);
     }
 
+    public static async Task<ClientResult<Boolean>> DeleteGitPullRequestStatusAsync(
+        HttpClient client,
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var response = await client.SendAsync(request, cancellationToken);
+            if (response.StatusCode is not System.Net.HttpStatusCode.OK and not System.Net.HttpStatusCode.NoContent)
+            {
+                return new ClientResult<Boolean>
+                {
+                    Status = ClientStatus.Failed,
+                };
+            }
+
+            return new ClientResult<Boolean>
+            {
+                Status = ClientStatus.Success,
+                Value = true,
+            };
+        }
+        catch (OperationCanceledException)
+        {
+            return new ClientResult<Boolean>
+            {
+                Status = ClientStatus.Cancelled,
+            };
+        }
+        catch (Exception exception)
+        {
+            return new ClientResult<Boolean>
+            {
+                Status = ClientStatus.Exception,
+                Exception = exception,
+            };
+        }
+    }
+
     public static async Task<ClientResult<GitMerge>> GetGitMergeAsync(
         HttpClient client,
         HttpRequestMessage request,

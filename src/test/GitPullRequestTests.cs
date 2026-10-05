@@ -142,6 +142,26 @@ public sealed class GitPullRequestTests : AzureDevOpsIntegrationTestBase
         Assert.Inconclusive("Create Pull Request Status changes Azure DevOps resources; the POST request is not sent.");
     }
 
+    [TestMethod]
+    [TestCategory("Integration")]
+    public void DeletePullRequestStatusAsync()
+    {
+        using var request = HttpRequestFactory.DeletePullRequestStatusRequest(
+            Organization,
+            "repository-id",
+            1,
+            1,
+            Project);
+
+        Assert.AreEqual(HttpMethod.Delete, request.Method);
+        Assert.AreEqual(
+            $"https://dev.azure.com/{Uri.EscapeDataString(Organization)}/{Uri.EscapeDataString(Project)}/_apis/git/repositories/repository-id/pullRequests/1/statuses/1?api-version=7.2-preview.2",
+            request.RequestUri!.AbsoluteUri);
+        Assert.IsNull(request.Content);
+
+        Assert.Inconclusive("Delete Pull Request Status changes Azure DevOps resources; the DELETE request is not sent.");
+    }
+
     private static void AssertPullRequestModel(GitPullRequest pullRequest)
     {
         Assert.IsNotNull(pullRequest.PullRequestId);

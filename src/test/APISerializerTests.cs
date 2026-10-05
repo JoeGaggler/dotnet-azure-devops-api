@@ -408,6 +408,23 @@ public sealed class APISerializerTests
     }
 
     [TestMethod]
+    public void DeletePullRequestStatusRequestIncludesDocumentedMethodAndRoute()
+    {
+        using var request = HttpRequestFactory.DeletePullRequestStatusRequest(
+            "org name",
+            "repo/id",
+            42,
+            7,
+            "project name");
+
+        Assert.AreEqual(HttpMethod.Delete, request.Method);
+        Assert.AreEqual(
+            "https://dev.azure.com/org%20name/project%20name/_apis/git/repositories/repo%2Fid/pullRequests/42/statuses/7?api-version=7.2-preview.2",
+            request.RequestUri!.AbsoluteUri);
+        Assert.IsNull(request.Content);
+    }
+
+    [TestMethod]
     public void DeserializeInvalidRootReturnsFailure()
     {
         var result = APISerializer.DeserializeGitPullRequest("[]"u8);
