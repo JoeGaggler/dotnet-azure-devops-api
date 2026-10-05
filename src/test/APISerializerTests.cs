@@ -243,6 +243,86 @@ public sealed class APISerializerTests
     }
 
     [TestMethod]
+    public async Task UpdateRefsRequestIncludesDocumentedMethodUriAndArrayBody()
+    {
+        using var request = HttpRequestFactory.UpdateRefsRequest(
+            "org name",
+            "repo/id",
+            [new GitRefUpdate
+            {
+                Name = "refs/heads/main",
+                OldObjectId = "old-object-id",
+                NewObjectId = "new-object-id",
+            }],
+            "project name",
+            "project/id");
+
+        Assert.AreEqual(HttpMethod.Post, request.Method);
+        Assert.AreEqual(
+            "https://dev.azure.com/org%20name/project%20name/_apis/git/repositories/repo%2Fid/refs?projectId=project%2Fid&api-version=7.2-preview.2",
+            request.RequestUri!.AbsoluteUri);
+        Assert.AreEqual("application/json", request.Content!.Headers.ContentType!.MediaType);
+
+        using var body = JsonDocument.Parse(await request.Content.ReadAsByteArrayAsync());
+        Assert.AreEqual(JsonValueKind.Array, body.RootElement.ValueKind);
+        Assert.HasCount(1, body.RootElement.EnumerateArray());
+        var update = body.RootElement[0];
+        Assert.AreEqual("refs/heads/main", update.GetProperty("name").GetString());
+        Assert.AreEqual("old-object-id", update.GetProperty("oldObjectId").GetString());
+        Assert.AreEqual("new-object-id", update.GetProperty("newObjectId").GetString());
+        Assert.AreEqual(3, update.EnumerateObject().Count());
+
+        using var minimalRequest = HttpRequestFactory.UpdateRefsRequest(
+            "organization",
+            "repository",
+            [new GitRefUpdate { Name = "refs/heads/main" }]);
+        Assert.AreEqual(
+            "https://dev.azure.com/organization/_apis/git/repositories/repository/refs?api-version=7.2-preview.2",
+            minimalRequest.RequestUri!.AbsoluteUri);
+    }
+
+    [TestMethod]
+    public void DeserializeGitRefUpdateResultsResponseWithoutValueReturnsModelValidationFailure()
+    {
+        var result = APISerializer.DeserializeGitRefUpdateResultsResponse("{}"u8);
+
+        Assert.AreEqual(DeserializationStatus.ModelValidationFailure, result.Status);
+    }
+
+    [TestMethod]
+    public void DeserializeGitRefUpdateResultsResponseWithMalformedPayloadReturnsFailure()
+    {
+        var empty = APISerializer.DeserializeGitRefUpdateResultsResponse(ReadOnlySpan<Byte>.Empty);
+        var invalidRoot = APISerializer.DeserializeGitRefUpdateResultsResponse("[]"u8);
+        var malformed = APISerializer.DeserializeGitRefUpdateResultsResponse("{\"value\":"u8);
+
+        Assert.AreEqual(DeserializationStatus.Failure, empty.Status);
+        Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
+        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+    }
+
+    [TestMethod]
+    public void DeserializeGitRefUpdateResultsResponseWithDocumentedFieldsReturnsSuccess()
+    {
+        var result = APISerializer.DeserializeGitRefUpdateResultsResponse(
+            """{"count":1,"value":[{"customMessage":"Updated","isLocked":false,"name":"refs/heads/main","newObjectId":"new-object-id","oldObjectId":"old-object-id","rejectedBy":"policy","repositoryId":"repository-id","success":true,"updateStatus":"succeeded"}]}"""u8);
+
+        Assert.AreEqual(DeserializationStatus.Success, result.Status);
+        Assert.AreEqual(1, result.Value.Count);
+        Assert.HasCount(1, result.Value.Value!);
+        var update = result.Value.Value![0];
+        Assert.AreEqual("Updated", update.CustomMessage);
+        Assert.IsFalse(update.IsLocked);
+        Assert.AreEqual("refs/heads/main", update.Name);
+        Assert.AreEqual("new-object-id", update.NewObjectId);
+        Assert.AreEqual("old-object-id", update.OldObjectId);
+        Assert.AreEqual("policy", update.RejectedBy);
+        Assert.AreEqual("repository-id", update.RepositoryId);
+        Assert.IsTrue(update.Success);
+        Assert.AreEqual("succeeded", update.UpdateStatus);
+    }
+
+    [TestMethod]
     public void DeserializeGitRepositoriesResponseWithInvalidRootReturnsFailure()
     {
         var result = APISerializer.DeserializeGitRepositoriesResponse("[]"u8);

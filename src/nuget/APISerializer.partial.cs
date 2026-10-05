@@ -148,6 +148,52 @@ partial class APISerializer
         };
     }
 
+    public static DeserializationResult<GitRefUpdateResultsResponse> DeserializeGitRefUpdateResultsResponse(String json)
+    {
+        if (!TryGetUtf8ByteArrayFromString(json, out var bytes, out var bytesWritten))
+        {
+            return new DeserializationResult<GitRefUpdateResultsResponse>
+            {
+                Status = DeserializationStatus.Failure,
+                Value = new GitRefUpdateResultsResponse(),
+            };
+        }
+
+        return DeserializeGitRefUpdateResultsResponse(bytes.AsSpan(0, bytesWritten));
+    }
+
+    public static DeserializationResult<GitRefUpdateResultsResponse> DeserializeGitRefUpdateResultsResponse(ReadOnlySpan<Byte> json)
+    {
+        var result = new GitRefUpdateResultsResponse();
+        var status = DeserializationStatus.None;
+        var reader = new Utf8JsonReader(json);
+
+        try
+        {
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+            {
+                status = DeserializationStatus.Failure;
+            }
+            else
+            {
+                Deserialize(ref reader, result);
+                status = result.Value is null
+                    ? DeserializationStatus.ModelValidationFailure
+                    : DeserializationStatus.Success;
+            }
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        {
+            status = DeserializationStatus.Failure;
+        }
+
+        return new DeserializationResult<GitRefUpdateResultsResponse>
+        {
+            Status = status,
+            Value = result,
+        };
+    }
+
     public static DeserializationResult<GitRepositoriesResponse> DeserializeGitRepositoriesResponse(String json)
     {
         if (!TryGetUtf8ByteArrayFromString(json, out var bytes, out var bytesWritten))

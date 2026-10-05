@@ -41,6 +41,7 @@ public static partial class APISerializer
 	private static readonly JsonEncodedText JsonEncText_createdDate = JsonEncodedText.Encode("createdDate");
 	private static readonly JsonEncodedText JsonEncText_creationDate = JsonEncodedText.Encode("creationDate");
 	private static readonly JsonEncodedText JsonEncText_creator = JsonEncodedText.Encode("creator");
+	private static readonly JsonEncodedText JsonEncText_customMessage = JsonEncodedText.Encode("customMessage");
 	private static readonly JsonEncodedText JsonEncText_date = JsonEncodedText.Encode("date");
 	private static readonly JsonEncodedText JsonEncText_defaultBranch = JsonEncodedText.Encode("defaultBranch");
 	private static readonly JsonEncodedText JsonEncText_defaultTeamImageUrl = JsonEncodedText.Encode("defaultTeamImageUrl");
@@ -131,6 +132,7 @@ public static partial class APISerializer
 	private static readonly JsonEncodedText JsonEncText_queueStatus = JsonEncodedText.Encode("queueStatus");
 	private static readonly JsonEncodedText JsonEncText_queueTime = JsonEncodedText.Encode("queueTime");
 	private static readonly JsonEncodedText JsonEncText_reason = JsonEncodedText.Encode("reason");
+	private static readonly JsonEncodedText JsonEncText_rejectedBy = JsonEncodedText.Encode("rejectedBy");
 	private static readonly JsonEncodedText JsonEncText_remoteUrl = JsonEncodedText.Encode("remoteUrl");
 	private static readonly JsonEncodedText JsonEncText_repository = JsonEncodedText.Encode("repository");
 	private static readonly JsonEncodedText JsonEncText_repositoryId = JsonEncodedText.Encode("repositoryId");
@@ -152,6 +154,7 @@ public static partial class APISerializer
 	private static readonly JsonEncodedText JsonEncText_state = JsonEncodedText.Encode("state");
 	private static readonly JsonEncodedText JsonEncText_status = JsonEncodedText.Encode("status");
 	private static readonly JsonEncodedText JsonEncText_statuses = JsonEncodedText.Encode("statuses");
+	private static readonly JsonEncodedText JsonEncText_success = JsonEncodedText.Encode("success");
 	private static readonly JsonEncodedText JsonEncText_supportsIterations = JsonEncodedText.Encode("supportsIterations");
 	private static readonly JsonEncodedText JsonEncText_tags = JsonEncodedText.Encode("tags");
 	private static readonly JsonEncodedText JsonEncText_targetRefName = JsonEncodedText.Encode("targetRefName");
@@ -163,6 +166,7 @@ public static partial class APISerializer
 	private static readonly JsonEncodedText JsonEncText_type = JsonEncodedText.Encode("type");
 	private static readonly JsonEncodedText JsonEncText_uniqueName = JsonEncodedText.Encode("uniqueName");
 	private static readonly JsonEncodedText JsonEncText_updatedDate = JsonEncodedText.Encode("updatedDate");
+	private static readonly JsonEncodedText JsonEncText_updateStatus = JsonEncodedText.Encode("updateStatus");
 	private static readonly JsonEncodedText JsonEncText_uri = JsonEncodedText.Encode("uri");
 	private static readonly JsonEncodedText JsonEncText_url = JsonEncodedText.Encode("url");
 	private static readonly JsonEncodedText JsonEncText_validationResults = JsonEncodedText.Encode("validationResults");
@@ -1956,6 +1960,190 @@ public static partial class APISerializer
 			}
 		}
 	}
+	public static void Serialize(Utf8JsonWriter writer, Pingmint.AzureDevOps.GitRefUpdateResult? value)
+	{
+		if (value is null) { writer.WriteNullValue(); return; }
+		writer.WriteStartObject();
+		if (value.CustomMessage is { } localCustomMessage)
+		{
+			writer.WritePropertyName(JsonEncText_customMessage);
+			writer.WriteStringValue(localCustomMessage);
+		}
+		if (value.IsLocked is { } localIsLocked)
+		{
+			writer.WritePropertyName(JsonEncText_isLocked);
+			writer.WriteBooleanValue(localIsLocked);
+		}
+		if (value.Name is { } localName)
+		{
+			writer.WritePropertyName(JsonEncText_name);
+			writer.WriteStringValue(localName);
+		}
+		if (value.NewObjectId is { } localNewObjectId)
+		{
+			writer.WritePropertyName(JsonEncText_newObjectId);
+			writer.WriteStringValue(localNewObjectId);
+		}
+		if (value.OldObjectId is { } localOldObjectId)
+		{
+			writer.WritePropertyName(JsonEncText_oldObjectId);
+			writer.WriteStringValue(localOldObjectId);
+		}
+		if (value.RejectedBy is { } localRejectedBy)
+		{
+			writer.WritePropertyName(JsonEncText_rejectedBy);
+			writer.WriteStringValue(localRejectedBy);
+		}
+		if (value.RepositoryId is { } localRepositoryId)
+		{
+			writer.WritePropertyName(JsonEncText_repositoryId);
+			writer.WriteStringValue(localRepositoryId);
+		}
+		if (value.Success is { } localSuccess)
+		{
+			writer.WritePropertyName(JsonEncText_success);
+			writer.WriteBooleanValue(localSuccess);
+		}
+		if (value.UpdateStatus is { } localUpdateStatus)
+		{
+			writer.WritePropertyName(JsonEncText_updateStatus);
+			writer.WriteStringValue(localUpdateStatus);
+		}
+		writer.WriteEndObject();
+	}
+
+	public static void Deserialize(ref Utf8JsonReader reader, Pingmint.AzureDevOps.GitRefUpdateResult obj)
+	{
+		while (true)
+		{
+			if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+			switch (reader.TokenType)
+			{
+				case JsonTokenType.PropertyName:
+				{
+					if (reader.ValueTextEquals("customMessage"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.CustomMessage = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.CustomMessage = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for CustomMessage: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("isLocked"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.IsLocked = null; break; }
+						if (reader.TokenType == JsonTokenType.True) { obj.IsLocked = true; break; }
+						if (reader.TokenType == JsonTokenType.False) { obj.IsLocked = false; break; }
+						throw new InvalidOperationException($"unexpected token type for IsLocked: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("name"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.Name = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.Name = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for Name: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("newObjectId"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.NewObjectId = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.NewObjectId = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for NewObjectId: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("oldObjectId"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.OldObjectId = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.OldObjectId = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for OldObjectId: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("rejectedBy"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.RejectedBy = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.RejectedBy = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for RejectedBy: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("repositoryId"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.RepositoryId = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.RepositoryId = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for RepositoryId: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("success"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.Success = null; break; }
+						if (reader.TokenType == JsonTokenType.True) { obj.Success = true; break; }
+						if (reader.TokenType == JsonTokenType.False) { obj.Success = false; break; }
+						throw new InvalidOperationException($"unexpected token type for Success: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("updateStatus"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.UpdateStatus = null; break; }
+						if (reader.TokenType == JsonTokenType.String) { obj.UpdateStatus = reader.GetString()!; break; }
+						throw new InvalidOperationException($"unexpected token type for UpdateStatus: {reader.TokenType} ");
+					}
+
+					SkipUnknownPropertyName(ref reader);
+					break;
+				}
+				case JsonTokenType.EndObject: { return; }
+				default: { reader.Skip(); break; }
+			}
+		}
+	}
+	public static void Serialize(Utf8JsonWriter writer, Pingmint.AzureDevOps.GitRefUpdateResultsResponse? value)
+	{
+		if (value is null) { writer.WriteNullValue(); return; }
+		writer.WriteStartObject();
+		if (value.Value is { } localValue)
+		{
+			writer.WritePropertyName(JsonEncText_value);
+			Serialize7(writer, localValue);
+		}
+		if (value.Count is { } localCount)
+		{
+			writer.WritePropertyName(JsonEncText_count);
+			writer.WriteNumberValue(localCount);
+		}
+		writer.WriteEndObject();
+	}
+
+	public static void Deserialize(ref Utf8JsonReader reader, Pingmint.AzureDevOps.GitRefUpdateResultsResponse obj)
+	{
+		while (true)
+		{
+			if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+			switch (reader.TokenType)
+			{
+				case JsonTokenType.PropertyName:
+				{
+					if (reader.ValueTextEquals("value"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.Value = null; break; }
+						if (reader.TokenType == JsonTokenType.StartArray) { obj.Value = new(); Deserialize7(ref reader, obj.Value); break; }
+						throw new InvalidOperationException($"unexpected token type for Value: {reader.TokenType} ");
+					}
+					else if (reader.ValueTextEquals("count"u8))
+					{
+						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+						if (reader.TokenType == JsonTokenType.Null) { obj.Count = null; break; }
+						if (reader.TokenType == JsonTokenType.Number) { obj.Count = reader.GetInt32(); break; }
+						throw new InvalidOperationException($"unexpected token type for Count: {reader.TokenType} ");
+					}
+
+					SkipUnknownPropertyName(ref reader);
+					break;
+				}
+				case JsonTokenType.EndObject: { return; }
+				default: { reader.Skip(); break; }
+			}
+		}
+	}
 	public static void Serialize(Utf8JsonWriter writer, Pingmint.AzureDevOps.GitRepositoriesResponse? value)
 	{
 		if (value is null) { writer.WriteNullValue(); return; }
@@ -1968,7 +2156,7 @@ public static partial class APISerializer
 		if (value.Value is { } localValue)
 		{
 			writer.WritePropertyName(JsonEncText_value);
-			Serialize7(writer, localValue);
+			Serialize8(writer, localValue);
 		}
 		writer.WriteEndObject();
 	}
@@ -1993,7 +2181,7 @@ public static partial class APISerializer
 					{
 						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
 						if (reader.TokenType == JsonTokenType.Null) { obj.Value = null; break; }
-						if (reader.TokenType == JsonTokenType.StartArray) { obj.Value = new(); Deserialize7(ref reader, obj.Value); break; }
+						if (reader.TokenType == JsonTokenType.StartArray) { obj.Value = new(); Deserialize8(ref reader, obj.Value); break; }
 						throw new InvalidOperationException($"unexpected token type for Value: {reader.TokenType} ");
 					}
 
@@ -2834,7 +3022,7 @@ public static partial class APISerializer
 		if (value.Commits is { } localCommits)
 		{
 			writer.WritePropertyName(JsonEncText_commits);
-			Serialize8(writer, localCommits);
+			Serialize9(writer, localCommits);
 		}
 		if (value.CompletionOptions is { } localCompletionOptions)
 		{
@@ -2884,7 +3072,7 @@ public static partial class APISerializer
 		if (value.Labels is { } localLabels)
 		{
 			writer.WritePropertyName(JsonEncText_labels);
-			Serialize9(writer, localLabels);
+			Serialize10(writer, localLabels);
 		}
 		if (value.LastMergeCommit is { } localLastMergeCommit)
 		{
@@ -2944,7 +3132,7 @@ public static partial class APISerializer
 		if (value.Reviewers is { } localReviewers)
 		{
 			writer.WritePropertyName(JsonEncText_reviewers);
-			Serialize10(writer, localReviewers);
+			Serialize11(writer, localReviewers);
 		}
 		if (value.SourceRefName is { } localSourceRefName)
 		{
@@ -2979,7 +3167,7 @@ public static partial class APISerializer
 		if (value.WorkItemRefs is { } localWorkItemRefs)
 		{
 			writer.WritePropertyName(JsonEncText_workItemRefs);
-			Serialize11(writer, localWorkItemRefs);
+			Serialize12(writer, localWorkItemRefs);
 		}
 		writer.WriteEndObject();
 	}
@@ -3039,7 +3227,7 @@ public static partial class APISerializer
 					{
 						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
 						if (reader.TokenType == JsonTokenType.Null) { obj.Commits = null; break; }
-						if (reader.TokenType == JsonTokenType.StartArray) { obj.Commits = new(); Deserialize8(ref reader, obj.Commits); break; }
+						if (reader.TokenType == JsonTokenType.StartArray) { obj.Commits = new(); Deserialize9(ref reader, obj.Commits); break; }
 						throw new InvalidOperationException($"unexpected token type for Commits: {reader.TokenType} ");
 					}
 					else if (reader.ValueTextEquals("completionOptions"u8))
@@ -3112,7 +3300,7 @@ public static partial class APISerializer
 					{
 						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
 						if (reader.TokenType == JsonTokenType.Null) { obj.Labels = null; break; }
-						if (reader.TokenType == JsonTokenType.StartArray) { obj.Labels = new(); Deserialize9(ref reader, obj.Labels); break; }
+						if (reader.TokenType == JsonTokenType.StartArray) { obj.Labels = new(); Deserialize10(ref reader, obj.Labels); break; }
 						throw new InvalidOperationException($"unexpected token type for Labels: {reader.TokenType} ");
 					}
 					else if (reader.ValueTextEquals("lastMergeCommit"u8))
@@ -3196,7 +3384,7 @@ public static partial class APISerializer
 					{
 						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
 						if (reader.TokenType == JsonTokenType.Null) { obj.Reviewers = null; break; }
-						if (reader.TokenType == JsonTokenType.StartArray) { obj.Reviewers = new(); Deserialize10(ref reader, obj.Reviewers); break; }
+						if (reader.TokenType == JsonTokenType.StartArray) { obj.Reviewers = new(); Deserialize11(ref reader, obj.Reviewers); break; }
 						throw new InvalidOperationException($"unexpected token type for Reviewers: {reader.TokenType} ");
 					}
 					else if (reader.ValueTextEquals("sourceRefName"u8))
@@ -3246,7 +3434,7 @@ public static partial class APISerializer
 					{
 						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
 						if (reader.TokenType == JsonTokenType.Null) { obj.WorkItemRefs = null; break; }
-						if (reader.TokenType == JsonTokenType.StartArray) { obj.WorkItemRefs = new(); Deserialize11(ref reader, obj.WorkItemRefs); break; }
+						if (reader.TokenType == JsonTokenType.StartArray) { obj.WorkItemRefs = new(); Deserialize12(ref reader, obj.WorkItemRefs); break; }
 						throw new InvalidOperationException($"unexpected token type for WorkItemRefs: {reader.TokenType} ");
 					}
 
@@ -3265,7 +3453,7 @@ public static partial class APISerializer
 		if (value.AutoCompleteIgnoreConfigIds is { } localAutoCompleteIgnoreConfigIds)
 		{
 			writer.WritePropertyName(JsonEncText_autoCompleteIgnoreConfigIds);
-			Serialize12(writer, localAutoCompleteIgnoreConfigIds);
+			Serialize13(writer, localAutoCompleteIgnoreConfigIds);
 		}
 		if (value.BypassPolicy is { } localBypassPolicy)
 		{
@@ -3323,7 +3511,7 @@ public static partial class APISerializer
 					{
 						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
 						if (reader.TokenType == JsonTokenType.Null) { obj.AutoCompleteIgnoreConfigIds = null; break; }
-						if (reader.TokenType == JsonTokenType.StartArray) { obj.AutoCompleteIgnoreConfigIds = new(); Deserialize12(ref reader, obj.AutoCompleteIgnoreConfigIds); break; }
+						if (reader.TokenType == JsonTokenType.StartArray) { obj.AutoCompleteIgnoreConfigIds = new(); Deserialize13(ref reader, obj.AutoCompleteIgnoreConfigIds); break; }
 						throw new InvalidOperationException($"unexpected token type for AutoCompleteIgnoreConfigIds: {reader.TokenType} ");
 					}
 					else if (reader.ValueTextEquals("bypassPolicy"u8))
@@ -3624,7 +3812,7 @@ public static partial class APISerializer
 		if (value.Value is { } localValue)
 		{
 			writer.WritePropertyName(JsonEncText_value);
-			Serialize13(writer, localValue);
+			Serialize14(writer, localValue);
 		}
 		if (value.Count is { } localCount)
 		{
@@ -3647,7 +3835,7 @@ public static partial class APISerializer
 					{
 						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
 						if (reader.TokenType == JsonTokenType.Null) { obj.Value = null; break; }
-						if (reader.TokenType == JsonTokenType.StartArray) { obj.Value = new(); Deserialize13(ref reader, obj.Value); break; }
+						if (reader.TokenType == JsonTokenType.StartArray) { obj.Value = new(); Deserialize14(ref reader, obj.Value); break; }
 						throw new InvalidOperationException($"unexpected token type for Value: {reader.TokenType} ");
 					}
 					else if (reader.ValueTextEquals("count"u8))
@@ -3673,7 +3861,7 @@ public static partial class APISerializer
 		if (value.Value is { } localValue)
 		{
 			writer.WritePropertyName(JsonEncText_value);
-			Serialize14(writer, localValue);
+			Serialize15(writer, localValue);
 		}
 		if (value.Count is { } localCount)
 		{
@@ -3696,7 +3884,7 @@ public static partial class APISerializer
 					{
 						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
 						if (reader.TokenType == JsonTokenType.Null) { obj.Value = null; break; }
-						if (reader.TokenType == JsonTokenType.StartArray) { obj.Value = new(); Deserialize14(ref reader, obj.Value); break; }
+						if (reader.TokenType == JsonTokenType.StartArray) { obj.Value = new(); Deserialize15(ref reader, obj.Value); break; }
 						throw new InvalidOperationException($"unexpected token type for Value: {reader.TokenType} ");
 					}
 					else if (reader.ValueTextEquals("count"u8))
@@ -3817,7 +4005,7 @@ public static partial class APISerializer
 		if (value.VotedFor is { } localVotedFor)
 		{
 			writer.WritePropertyName(JsonEncText_votedFor);
-			Serialize10(writer, localVotedFor);
+			Serialize11(writer, localVotedFor);
 		}
 		writer.WriteEndObject();
 	}
@@ -3976,7 +4164,7 @@ public static partial class APISerializer
 					{
 						if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
 						if (reader.TokenType == JsonTokenType.Null) { obj.VotedFor = null; break; }
-						if (reader.TokenType == JsonTokenType.StartArray) { obj.VotedFor = new(); Deserialize10(ref reader, obj.VotedFor); break; }
+						if (reader.TokenType == JsonTokenType.StartArray) { obj.VotedFor = new(); Deserialize11(ref reader, obj.VotedFor); break; }
 						throw new InvalidOperationException($"unexpected token type for VotedFor: {reader.TokenType} ");
 					}
 
@@ -4979,7 +5167,7 @@ public static partial class APISerializer
 			}
 		}
 	}
-	private static void Serialize7(Utf8JsonWriter writer, List<Pingmint.AzureDevOps.GitRepository>? array)
+	private static void Serialize7(Utf8JsonWriter writer, List<Pingmint.AzureDevOps.GitRefUpdateResult>? array)
 	{
 		if (array is null) { writer.WriteNullValue(); return; }
 		writer.WriteStartArray();
@@ -4990,7 +5178,38 @@ public static partial class APISerializer
 		writer.WriteEndArray();
 	}
 
-	private static void Deserialize7(ref Utf8JsonReader reader, List<Pingmint.AzureDevOps.GitRepository> array)
+	private static void Deserialize7(ref Utf8JsonReader reader, List<Pingmint.AzureDevOps.GitRefUpdateResult> array)
+	{
+		while (true)
+		{
+			if (!reader.Read()) throw new InvalidOperationException("Unable to read next token from Utf8JsonReader");
+			switch (reader.TokenType)
+			{
+				case JsonTokenType.Null: { reader.Skip(); break; }
+				case JsonTokenType.StartObject:
+				{
+					Pingmint.AzureDevOps.GitRefUpdateResult item = new();
+					Deserialize(ref reader, item);
+					array.Add(item);
+					break;
+				}
+				case JsonTokenType.EndArray: { return; }
+				default: { reader.Skip(); break; }
+			}
+		}
+	}
+	private static void Serialize8(Utf8JsonWriter writer, List<Pingmint.AzureDevOps.GitRepository>? array)
+	{
+		if (array is null) { writer.WriteNullValue(); return; }
+		writer.WriteStartArray();
+		foreach (var item in array)
+		{
+			Serialize(writer, item);
+		}
+		writer.WriteEndArray();
+	}
+
+	private static void Deserialize8(ref Utf8JsonReader reader, List<Pingmint.AzureDevOps.GitRepository> array)
 	{
 		while (true)
 		{
@@ -5010,7 +5229,7 @@ public static partial class APISerializer
 			}
 		}
 	}
-	private static void Serialize8(Utf8JsonWriter writer, List<Pingmint.AzureDevOps.GitCommitRef>? array)
+	private static void Serialize9(Utf8JsonWriter writer, List<Pingmint.AzureDevOps.GitCommitRef>? array)
 	{
 		if (array is null) { writer.WriteNullValue(); return; }
 		writer.WriteStartArray();
@@ -5021,7 +5240,7 @@ public static partial class APISerializer
 		writer.WriteEndArray();
 	}
 
-	private static void Deserialize8(ref Utf8JsonReader reader, List<Pingmint.AzureDevOps.GitCommitRef> array)
+	private static void Deserialize9(ref Utf8JsonReader reader, List<Pingmint.AzureDevOps.GitCommitRef> array)
 	{
 		while (true)
 		{
@@ -5041,7 +5260,7 @@ public static partial class APISerializer
 			}
 		}
 	}
-	private static void Serialize9(Utf8JsonWriter writer, List<Pingmint.AzureDevOps.WebApiTagDefinition>? array)
+	private static void Serialize10(Utf8JsonWriter writer, List<Pingmint.AzureDevOps.WebApiTagDefinition>? array)
 	{
 		if (array is null) { writer.WriteNullValue(); return; }
 		writer.WriteStartArray();
@@ -5052,7 +5271,7 @@ public static partial class APISerializer
 		writer.WriteEndArray();
 	}
 
-	private static void Deserialize9(ref Utf8JsonReader reader, List<Pingmint.AzureDevOps.WebApiTagDefinition> array)
+	private static void Deserialize10(ref Utf8JsonReader reader, List<Pingmint.AzureDevOps.WebApiTagDefinition> array)
 	{
 		while (true)
 		{
@@ -5072,7 +5291,7 @@ public static partial class APISerializer
 			}
 		}
 	}
-	private static void Serialize10(Utf8JsonWriter writer, List<Pingmint.AzureDevOps.IdentityRefWithVote>? array)
+	private static void Serialize11(Utf8JsonWriter writer, List<Pingmint.AzureDevOps.IdentityRefWithVote>? array)
 	{
 		if (array is null) { writer.WriteNullValue(); return; }
 		writer.WriteStartArray();
@@ -5083,7 +5302,7 @@ public static partial class APISerializer
 		writer.WriteEndArray();
 	}
 
-	private static void Deserialize10(ref Utf8JsonReader reader, List<Pingmint.AzureDevOps.IdentityRefWithVote> array)
+	private static void Deserialize11(ref Utf8JsonReader reader, List<Pingmint.AzureDevOps.IdentityRefWithVote> array)
 	{
 		while (true)
 		{
@@ -5103,7 +5322,7 @@ public static partial class APISerializer
 			}
 		}
 	}
-	private static void Serialize11(Utf8JsonWriter writer, List<Pingmint.AzureDevOps.ResourceRef>? array)
+	private static void Serialize12(Utf8JsonWriter writer, List<Pingmint.AzureDevOps.ResourceRef>? array)
 	{
 		if (array is null) { writer.WriteNullValue(); return; }
 		writer.WriteStartArray();
@@ -5114,7 +5333,7 @@ public static partial class APISerializer
 		writer.WriteEndArray();
 	}
 
-	private static void Deserialize11(ref Utf8JsonReader reader, List<Pingmint.AzureDevOps.ResourceRef> array)
+	private static void Deserialize12(ref Utf8JsonReader reader, List<Pingmint.AzureDevOps.ResourceRef> array)
 	{
 		while (true)
 		{
@@ -5134,7 +5353,7 @@ public static partial class APISerializer
 			}
 		}
 	}
-	private static void Serialize12(Utf8JsonWriter writer, List<int>? array)
+	private static void Serialize13(Utf8JsonWriter writer, List<int>? array)
 	{
 		if (array is null) { writer.WriteNullValue(); return; }
 		writer.WriteStartArray();
@@ -5145,7 +5364,7 @@ public static partial class APISerializer
 		writer.WriteEndArray();
 	}
 
-	private static void Deserialize12(ref Utf8JsonReader reader, List<int> array)
+	private static void Deserialize13(ref Utf8JsonReader reader, List<int> array)
 	{
 		while (true)
 		{
@@ -5164,7 +5383,7 @@ public static partial class APISerializer
 			}
 		}
 	}
-	private static void Serialize13(Utf8JsonWriter writer, List<Pingmint.AzureDevOps.GitPullRequestStatus>? array)
+	private static void Serialize14(Utf8JsonWriter writer, List<Pingmint.AzureDevOps.GitPullRequestStatus>? array)
 	{
 		if (array is null) { writer.WriteNullValue(); return; }
 		writer.WriteStartArray();
@@ -5175,7 +5394,7 @@ public static partial class APISerializer
 		writer.WriteEndArray();
 	}
 
-	private static void Deserialize13(ref Utf8JsonReader reader, List<Pingmint.AzureDevOps.GitPullRequestStatus> array)
+	private static void Deserialize14(ref Utf8JsonReader reader, List<Pingmint.AzureDevOps.GitPullRequestStatus> array)
 	{
 		while (true)
 		{
@@ -5195,7 +5414,7 @@ public static partial class APISerializer
 			}
 		}
 	}
-	private static void Serialize14(Utf8JsonWriter writer, List<Pingmint.AzureDevOps.GitPullRequest>? array)
+	private static void Serialize15(Utf8JsonWriter writer, List<Pingmint.AzureDevOps.GitPullRequest>? array)
 	{
 		if (array is null) { writer.WriteNullValue(); return; }
 		writer.WriteStartArray();
@@ -5206,7 +5425,7 @@ public static partial class APISerializer
 		writer.WriteEndArray();
 	}
 
-	private static void Deserialize14(ref Utf8JsonReader reader, List<Pingmint.AzureDevOps.GitPullRequest> array)
+	private static void Deserialize15(ref Utf8JsonReader reader, List<Pingmint.AzureDevOps.GitPullRequest> array)
 	{
 		while (true)
 		{
@@ -5387,6 +5606,23 @@ public sealed partial record class GitRefUpdate
 	public string? NewObjectId { get; set; }
 	public string? OldObjectId { get; set; }
 	public string? RepositoryId { get; set; }
+}
+public sealed partial record class GitRefUpdateResult
+{
+	public string? CustomMessage { get; set; }
+	public bool? IsLocked { get; set; }
+	public string? Name { get; set; }
+	public string? NewObjectId { get; set; }
+	public string? OldObjectId { get; set; }
+	public string? RejectedBy { get; set; }
+	public string? RepositoryId { get; set; }
+	public bool? Success { get; set; }
+	public string? UpdateStatus { get; set; }
+}
+public sealed partial record class GitRefUpdateResultsResponse
+{
+	public List<Pingmint.AzureDevOps.GitRefUpdateResult>? Value { get; set; }
+	public int? Count { get; set; }
 }
 public sealed partial record class GitRepositoriesResponse
 {

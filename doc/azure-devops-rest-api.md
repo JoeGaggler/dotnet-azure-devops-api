@@ -41,6 +41,15 @@ Version:       7.2-preview.2
 Request Method: UpdateRefRequest
 Response Model: Pingmint.AzureDevOps.GitRef
 
+##### Update Refs
+
+Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/git/refs/update-refs?view=azure-devops-rest-7.2&tabs=HTTP
+Endpoint:      POST https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryId}/refs
+Version:       7.2-preview.2
+
+Request Method: UpdateRefsRequest
+Response Model: Pingmint.AzureDevOps.GitRefUpdateResultsResponse
+
 #### Repositories
 
 ##### Get Repository

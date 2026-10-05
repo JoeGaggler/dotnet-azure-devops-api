@@ -28,6 +28,19 @@ public static class Client
             cancellationToken);
     }
 
+    public static async Task<ClientResult<GitRefUpdateResultsResponse>> UpdateGitRefsAsync(
+        HttpClient client,
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        return await SendAndDeserializeAsync<GitRefUpdateResultsResponse>(
+            client,
+            request,
+            System.Net.HttpStatusCode.OK,
+            static bytes => APISerializer.DeserializeGitRefUpdateResultsResponse(bytes),
+            cancellationToken);
+    }
+
     public static async Task<ClientResult<GitRefsResponse>> ListGitRefsAsync(
         HttpClient client,
         HttpRequestMessage request,

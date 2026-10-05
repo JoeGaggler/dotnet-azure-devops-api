@@ -204,4 +204,36 @@ public sealed class GitRepositoryTests : AzureDevOpsIntegrationTestBase
 
         Assert.Inconclusive("Update Ref changes Azure DevOps repository state; the PATCH request is not sent.");
     }
+
+    [TestMethod]
+    [TestCategory("Integration")]
+    public async Task UpdateRefsAsync()
+    {
+        using var request = HttpRequestFactory.UpdateRefsRequest(
+            Organization,
+            "repository-id",
+            [new GitRefUpdate
+            {
+                Name = "refs/heads/example",
+                OldObjectId = "old-object-id",
+                NewObjectId = "new-object-id",
+            }],
+            Project);
+
+        Assert.AreEqual(HttpMethod.Post, request.Method);
+        Assert.AreEqual(
+            $"https://dev.azure.com/{Uri.EscapeDataString(Organization)}/{Uri.EscapeDataString(Project)}/_apis/git/repositories/repository-id/refs?api-version=7.2-preview.2",
+            request.RequestUri!.AbsoluteUri);
+
+        using var body = JsonDocument.Parse(await request.Content!.ReadAsByteArrayAsync(TestContext.CancellationToken));
+        Assert.AreEqual(JsonValueKind.Array, body.RootElement.ValueKind);
+        Assert.AreEqual("refs/heads/example", body.RootElement[0].GetProperty("name").GetString());
+
+        var response = APISerializer.DeserializeGitRefUpdateResultsResponse(
+            """{"count":1,"value":[{"name":"refs/heads/example","newObjectId":"new-object-id","oldObjectId":"old-object-id","repositoryId":"repository-id","success":true,"updateStatus":"succeeded"}]}"""u8);
+        Assert.AreEqual(DeserializationStatus.Success, response.Status);
+        Assert.IsTrue(response.Value.Value![0].Success);
+
+        Assert.Inconclusive("Update Refs changes Azure DevOps repository state; the POST request is not sent.");
+    }
 }

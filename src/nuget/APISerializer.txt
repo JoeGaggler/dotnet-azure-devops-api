@@ -156,6 +156,21 @@ Pingmint.AzureDevOps.GitRefUpdate
 - "oldObjectId" => OldObjectId : string
 - "repositoryId" => RepositoryId : string
 
+Pingmint.AzureDevOps.GitRefUpdateResult
+- "customMessage" => CustomMessage : string
+- "isLocked" => IsLocked : bool
+- "name" => Name : string
+- "newObjectId" => NewObjectId : string
+- "oldObjectId" => OldObjectId : string
+- "rejectedBy" => RejectedBy : string
+- "repositoryId" => RepositoryId : string
+- "success" => Success : bool
+- "updateStatus" => UpdateStatus : string
+
+Pingmint.AzureDevOps.GitRefUpdateResultsResponse
+- "value" => Value : [Pingmint.AzureDevOps.GitRefUpdateResult]
+- "count" => Count : int
+
 Pingmint.AzureDevOps.GitRepositoriesResponse
 - "count" => Count : int
 - "value" => Value : [Pingmint.AzureDevOps.GitRepository]

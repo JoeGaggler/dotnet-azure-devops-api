@@ -235,6 +235,53 @@ public static class HttpRequestFactory
     }
 
     /// <summary>
+    /// Creates, updates, or deletes refs (branches) in a repository. Updating a ref requires both the old and new commit IDs to avoid race conditions.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="repositoryId">The name or ID of the repository.</param>
+    /// <param name="updates">The list of ref updates to attempt to perform.</param>
+    /// <param name="project">The project ID or project name. This parameter is optional.</param>
+    /// <param name="projectId">The ID or name of the team project. This parameter is optional if a repository ID is specified.</param>
+    /// <returns>An HTTP request message for the Update Refs operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.2.
+    /// See <see href="https://learn.microsoft.com/en-us/rest/api/azure/devops/git/refs/update-refs?view=azure-devops-rest-7.2&amp;tabs=HTTP">the official Azure DevOps REST API documentation</see>.
+    /// </remarks>
+    public static HttpRequestMessage UpdateRefsRequest(
+        string organization,
+        string repositoryId,
+        IEnumerable<GitRefUpdate> updates,
+        string? project = null,
+        string? projectId = null)
+    {
+        var queryParameters = new List<string>();
+
+        if (projectId is not null)
+            queryParameters.Add($"projectId={Uri.EscapeDataString(projectId)}");
+
+        queryParameters.Add("api-version=7.2-preview.2");
+
+        var organizationSegment = Uri.EscapeDataString(organization);
+        var projectSegment = project is null ? null : $"/{Uri.EscapeDataString(project)}";
+        var repositorySegment = Uri.EscapeDataString(repositoryId);
+        var url = $"https://dev.azure.com/{organizationSegment}{projectSegment}/_apis/git/repositories/{repositorySegment}/refs?{string.Join('&', queryParameters)}";
+        var request = new HttpRequestMessage(HttpMethod.Post, new Uri(url, UriKind.Absolute));
+
+        using var bodyStream = new MemoryStream();
+        using (var writer = new System.Text.Json.Utf8JsonWriter(bodyStream))
+        {
+            writer.WriteStartArray();
+            foreach (var update in updates)
+                APISerializer.Serialize(writer, update);
+            writer.WriteEndArray();
+        }
+
+        request.Content = new ByteArrayContent(bodyStream.ToArray());
+        request.Content.Headers.ContentType = new("application/json");
+        return request;
+    }
+
+    /// <summary>
     /// Retrieves Git repositories.
     /// </summary>
     /// <param name="organization">The name of the Azure DevOps organization.</param>
