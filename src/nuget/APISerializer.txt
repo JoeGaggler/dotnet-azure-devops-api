@@ -171,6 +171,23 @@ Pingmint.AzureDevOps.GitPullRequestMergeOptions
 - "detectRenameFalsePositives" => DetectRenameFalsePositives : bool
 - "disableRenames" => DisableRenames : bool
 
+Pingmint.AzureDevOps.GitPullRequestStatus
+- "_links" => Links : Pingmint.AzureDevOps.ReferenceLinks
+- "context" => Context : Pingmint.AzureDevOps.GitStatusContext
+- "createdBy" => CreatedBy : Pingmint.AzureDevOps.IdentityRef
+- "creationDate" => CreationDate : string
+- "description" => Description : string
+- "id" => Id : int
+- "iterationId" => IterationId : int
+- "properties" => Properties : Pingmint.AzureDevOps.PropertiesCollection
+- "state" => State : string
+- "targetUrl" => TargetUrl : string
+- "updatedDate" => UpdatedDate : string
+
+Pingmint.AzureDevOps.GitPullRequestStatusesResponse
+- "value" => Value : [Pingmint.AzureDevOps.GitPullRequestStatus]
+- "count" => Count : int
+
 Pingmint.AzureDevOps.GitPullRequestsResponse
 - "value" => Value : [Pingmint.AzureDevOps.GitPullRequest]
 - "count" => Count : int
@@ -213,6 +230,11 @@ Pingmint.AzureDevOps.IdentityRef
 - "profileUrl" => ProfileUrl : string
 - "uniqueName" => UniqueName : string
 - "url" => Url : string
+
+Pingmint.AzureDevOps.PropertiesCollection
+- "count" => Count : int
+- "keys" => Keys : [string]
+- "values" => Values : [string]
 
 Pingmint.AzureDevOps.ReferenceLink
 - "href" => Href : string

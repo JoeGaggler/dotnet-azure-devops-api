@@ -305,6 +305,60 @@ public sealed class APISerializerTests
     }
 
     [TestMethod]
+    public void DeserializeGitPullRequestStatusesResponseWithoutValueReturnsModelValidationFailure()
+    {
+        var result = APISerializer.DeserializeGitPullRequestStatusesResponse("{}"u8);
+
+        Assert.AreEqual(DeserializationStatus.ModelValidationFailure, result.Status);
+    }
+
+    [TestMethod]
+    public void DeserializeGitPullRequestStatusesResponseWithMalformedOrInvalidRootReturnsFailure()
+    {
+        var malformed = APISerializer.DeserializeGitPullRequestStatusesResponse("{\"value\":"u8);
+        var invalidRoot = APISerializer.DeserializeGitPullRequestStatusesResponse("[]"u8);
+
+        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+        Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
+    }
+
+    [TestMethod]
+    public void DeserializeGitPullRequestStatusesResponsePreservesHeterogeneousProperties()
+    {
+        var result = APISerializer.DeserializeGitPullRequestStatusesResponse(
+            """{"value":[{"id":1,"state":"succeeded","context":{"name":"build","genre":"ci"},"creationDate":"2017-09-19T14:50:27.064405Z","createdBy":{"id":"identity-id"},"properties":{"count":3,"item":{"score":7,"passed":true,"label":"ci"},"keys":["score","passed","label"],"values":["7","True","ci"]}}],"count":1}"""u8);
+
+        Assert.AreEqual(DeserializationStatus.Success, result.Status);
+        Assert.AreEqual(1, result.Value.Count);
+        var status = result.Value.Value![0];
+        Assert.AreEqual(1, status.Id);
+        Assert.AreEqual("succeeded", status.State);
+        Assert.AreEqual("build", status.Context!.Name);
+        Assert.AreEqual("identity-id", status.CreatedBy!.Id);
+        Assert.AreEqual(3, status.Properties!.Count);
+        var keys = status.Properties.Keys!;
+        Assert.HasCount(3, keys);
+        Assert.AreEqual(JsonValueKind.Object, status.Properties.Item!.Value.ValueKind);
+        Assert.AreEqual(7, status.Properties.Item.Value.GetProperty("score").GetInt32());
+        Assert.IsTrue(status.Properties.Item.Value.GetProperty("passed").GetBoolean());
+    }
+
+    [TestMethod]
+    public void GetPullRequestStatusesRequestIncludesDocumentedRoute()
+    {
+        using var request = HttpRequestFactory.GetPullRequestStatusesRequest(
+            "org name",
+            "repo/id",
+            42,
+            "project name");
+
+        Assert.AreEqual(HttpMethod.Get, request.Method);
+        Assert.AreEqual(
+            "https://dev.azure.com/org%20name/project%20name/_apis/git/repositories/repo%2Fid/pullRequests/42/statuses?api-version=7.2-preview.2",
+            request.RequestUri!.AbsoluteUri);
+    }
+
+    [TestMethod]
     public void DeserializeInvalidRootReturnsFailure()
     {
         var result = APISerializer.DeserializeGitPullRequest("[]"u8);

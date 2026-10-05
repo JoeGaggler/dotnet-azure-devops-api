@@ -210,6 +210,31 @@ public static class HttpRequestFactory
     }
 
     /// <summary>
+    /// Gets all statuses associated with a pull request.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="repositoryId">The repository ID of the pull request's target branch.</param>
+    /// <param name="pullRequestId">The ID of the pull request.</param>
+    /// <param name="project">The project ID or project name. This parameter is optional.</param>
+    /// <returns>An HTTP request message for the List Pull Request Statuses operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.2.
+    /// See <see href="https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-request-statuses/list?view=azure-devops-rest-7.2&amp;tabs=HTTP">the official Azure DevOps REST API documentation</see>.
+    /// </remarks>
+    public static HttpRequestMessage GetPullRequestStatusesRequest(
+        string organization,
+        string repositoryId,
+        int pullRequestId,
+        string? project = null)
+    {
+        var organizationSegment = Uri.EscapeDataString(organization);
+        var projectSegment = project is null ? null : $"/{Uri.EscapeDataString(project)}";
+        var repositorySegment = Uri.EscapeDataString(repositoryId);
+        var url = $"https://dev.azure.com/{organizationSegment}{projectSegment}/_apis/git/repositories/{repositorySegment}/pullRequests/{pullRequestId}/statuses?api-version=7.2-preview.2";
+        return new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+    }
+
+    /// <summary>
     /// Retrieves pull requests that match the specified criteria. Descriptions in the results are truncated to 400 characters.
     /// </summary>
     /// <param name="organization">The name of the Azure DevOps organization.</param>

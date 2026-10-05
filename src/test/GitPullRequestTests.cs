@@ -53,6 +53,57 @@ public sealed class GitPullRequestTests : AzureDevOpsIntegrationTestBase
             AssertPullRequestModel(pullRequest);
     }
 
+    [TestMethod]
+    [TestCategory("Integration")]
+    public async Task FetchPullRequestStatusesAsync()
+    {
+        using var client = new HttpClient();
+        using var listRequest = HttpRequestFactory.GetPullRequestsByProjectRequest(Organization, Project);
+        AddAuthorizationForAzureDevOps(listRequest);
+
+        var pullRequests = await Client.ListGitPullRequestsAsync(client, listRequest, TestContext.CancellationToken);
+        Assert.AreEqual(ClientStatus.Success, pullRequests.Status);
+        Assert.IsNotNull(pullRequests.Value.Value);
+
+        var pullRequest = pullRequests.Value.Value.FirstOrDefault(
+            item => item.PullRequestId is not null && item.Repository?.Id is not null);
+        if (pullRequest is null)
+        {
+            Assert.Inconclusive("The configured project has no pull request with a repository ID to query statuses for.");
+            return;
+        }
+
+        using var request = HttpRequestFactory.GetPullRequestStatusesRequest(
+            Organization,
+            pullRequest.Repository!.Id!,
+            pullRequest.PullRequestId!.Value,
+            Project);
+        AddAuthorizationForAzureDevOps(request);
+
+        var response = await Client.GetGitPullRequestStatusesAsync(client, request, TestContext.CancellationToken);
+        Assert.AreEqual(ClientStatus.Success, response.Status);
+        Assert.IsNotNull(response.Value.Value);
+        Assert.IsNotNull(response.Value.Count);
+        Assert.AreEqual(response.Value.Value.Count, response.Value.Count.Value);
+
+        foreach (var status in response.Value.Value)
+        {
+            Assert.IsNotNull(status.Id);
+            if (status.State is not null)
+                Assert.IsFalse(string.IsNullOrWhiteSpace(status.State));
+            if (status.Context is not null)
+                Assert.IsNotNull(status.Context.Name);
+            if (status.CreatedBy is not null)
+                Assert.IsNotNull(status.CreatedBy.Id);
+            if (status.CreationDate is not null)
+                Assert.IsTrue(DateTimeOffset.TryParse(status.CreationDate, out _));
+            if (status.UpdatedDate is not null)
+                Assert.IsTrue(DateTimeOffset.TryParse(status.UpdatedDate, out _));
+            if (status.Properties?.Keys is not null)
+                Assert.HasCount(status.Properties.Count!.Value, status.Properties.Keys);
+        }
+    }
+
     private static void AssertPullRequestModel(GitPullRequest pullRequest)
     {
         Assert.IsNotNull(pullRequest.PullRequestId);

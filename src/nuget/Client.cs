@@ -10,9 +10,9 @@ public static class Client
         return await SendAndDeserializeAsync<GitRef>(
             client,
             request,
-            cancellationToken,
             System.Net.HttpStatusCode.OK,
-            static bytes => APISerializer.DeserializeGitRef(bytes));
+            static bytes => APISerializer.DeserializeGitRef(bytes),
+            cancellationToken);
     }
 
     public static async Task<ClientResult<GitRefsResponse>> ListGitRefsAsync(
@@ -23,9 +23,9 @@ public static class Client
         return await SendAndDeserializeAsync<GitRefsResponse>(
             client,
             request,
-            cancellationToken,
             System.Net.HttpStatusCode.OK,
-            static bytes => APISerializer.DeserializeGitRefsResponse(bytes));
+            static bytes => APISerializer.DeserializeGitRefsResponse(bytes),
+            cancellationToken);
     }
 
     public static async Task<ClientResult<GitRepository>> GetGitRepositoryAsync(
@@ -36,9 +36,9 @@ public static class Client
         return await SendAndDeserializeAsync<GitRepository>(
             client,
             request,
-            cancellationToken,
             System.Net.HttpStatusCode.OK,
-            static bytes => APISerializer.DeserializeGitRepository(bytes));
+            static bytes => APISerializer.DeserializeGitRepository(bytes),
+            cancellationToken);
     }
 
     public static async Task<ClientResult<GitRepositoriesResponse>> ListGitRepositoriesAsync(
@@ -49,9 +49,9 @@ public static class Client
         return await SendAndDeserializeAsync<GitRepositoriesResponse>(
             client,
             request,
-            cancellationToken,
             System.Net.HttpStatusCode.OK,
-            static bytes => APISerializer.DeserializeGitRepositoriesResponse(bytes));
+            static bytes => APISerializer.DeserializeGitRepositoriesResponse(bytes),
+            cancellationToken);
     }
 
     public static async Task<ClientResult<GitPullRequest>> GetGitPullRequestAsync(
@@ -62,9 +62,9 @@ public static class Client
         return await SendAndDeserializeAsync<GitPullRequest>(
             client,
             request,
-            cancellationToken,
             System.Net.HttpStatusCode.OK,
-            static bytes => APISerializer.DeserializeGitPullRequest(bytes));
+            static bytes => APISerializer.DeserializeGitPullRequest(bytes),
+            cancellationToken);
     }
 
     public static async Task<ClientResult<GitPullRequestsResponse>> ListGitPullRequestsAsync(
@@ -75,9 +75,22 @@ public static class Client
         return await SendAndDeserializeAsync<GitPullRequestsResponse>(
             client,
             request,
-            cancellationToken,
             System.Net.HttpStatusCode.OK,
-            static bytes => APISerializer.DeserializeGitPullRequestsResponse(bytes));
+            static bytes => APISerializer.DeserializeGitPullRequestsResponse(bytes),
+            cancellationToken);
+    }
+
+    public static async Task<ClientResult<GitPullRequestStatusesResponse>> GetGitPullRequestStatusesAsync(
+        HttpClient client,
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        return await SendAndDeserializeAsync<GitPullRequestStatusesResponse>(
+            client,
+            request,
+            System.Net.HttpStatusCode.OK,
+            static bytes => APISerializer.DeserializeGitPullRequestStatusesResponse(bytes),
+            cancellationToken);
     }
 
     public static async Task<ClientResult<GitMerge>> GetGitMergeAsync(
@@ -88,9 +101,9 @@ public static class Client
         return await SendAndDeserializeAsync<GitMerge>(
             client,
             request,
-            cancellationToken,
             System.Net.HttpStatusCode.OK,
-            static bytes => APISerializer.DeserializeGitMerge(bytes));
+            static bytes => APISerializer.DeserializeGitMerge(bytes),
+            cancellationToken);
     }
 
     public static async Task<ClientResult<GitMerge>> CreateGitMergeAsync(
@@ -101,17 +114,18 @@ public static class Client
         return await SendAndDeserializeAsync<GitMerge>(
             client,
             request,
-            cancellationToken,
             System.Net.HttpStatusCode.Created,
-            static bytes => APISerializer.DeserializeGitMerge(bytes));
+            static bytes => APISerializer.DeserializeGitMerge(bytes),
+            cancellationToken);
     }
 
     private static async Task<ClientResult<T>> SendAndDeserializeAsync<T>(
         HttpClient client,
         HttpRequestMessage request,
-        CancellationToken cancellationToken,
         System.Net.HttpStatusCode successStatusCode,
-        Func<Byte[], DeserializationResult<T>> deserialize)
+        Func<Byte[], DeserializationResult<T>> deserialize,
+        CancellationToken cancellationToken
+        )
     {
         try
         {
@@ -138,6 +152,13 @@ public static class Client
                     Exception = new InvalidOperationException("Deserialization failed"),
                 };
         }
+        catch (OperationCanceledException)
+        {
+            return new ClientResult<T>
+            {
+                Status = ClientStatus.Cancelled,
+            };
+        }
         catch (Exception exception)
         {
             return new ClientResult<T>
@@ -162,5 +183,6 @@ public enum ClientStatus
     None,
     Success,
     Failed,
-    Exception
+    Cancelled,
+    Exception,
 }
