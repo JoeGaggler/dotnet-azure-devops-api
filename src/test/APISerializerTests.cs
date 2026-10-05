@@ -125,6 +125,48 @@ public sealed class APISerializerTests
     }
 
     [TestMethod]
+    public async Task ListBuildsAsyncReturnsContinuationHeaderForNextRequest()
+    {
+        using var client = new HttpClient(new BuildResponseHandler("next +page"));
+        using var request = HttpRequestFactory.ListBuildsRequest("organization", "project", top: 1);
+
+        var result = await Client.ListBuildsAsync(client, request, CancellationToken.None);
+
+        Assert.AreEqual(ClientStatus.Success, result.Status);
+        Assert.IsNotNull(result.Value.Response.Value);
+        Assert.AreEqual("next +page", result.Value.ContinuationToken);
+        using var nextRequest = HttpRequestFactory.ListBuildsRequest("organization", "project", top: 1, continuationToken: result.Value.ContinuationToken);
+        StringAssert.Contains(nextRequest.RequestUri!.Query, "continuationToken=next%20%2Bpage");
+    }
+
+    [TestMethod]
+    public async Task ListBuildsAsyncWithoutContinuationHeaderReturnsNullToken()
+    {
+        using var client = new HttpClient(new BuildResponseHandler(null));
+        using var request = HttpRequestFactory.ListBuildsRequest("organization", "project");
+
+        var result = await Client.ListBuildsAsync(client, request, CancellationToken.None);
+
+        Assert.AreEqual(ClientStatus.Success, result.Status);
+        Assert.IsNotNull(result.Value.Response.Value);
+        Assert.IsNull(result.Value.ContinuationToken);
+    }
+
+    private sealed class BuildResponseHandler(string? continuationToken) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"count\":0,\"value\":[]}"),
+            };
+            if (continuationToken is not null)
+                response.Headers.Add("x-ms-continuationtoken", continuationToken);
+            return Task.FromResult(response);
+        }
+    }
+
+    [TestMethod]
     public void GetBuildRequestIncludesDocumentedRouteAndEscapesOptionalPropertyFilters()
     {
         using var request = HttpRequestFactory.GetBuildRequest(

@@ -2,17 +2,57 @@ namespace Pingmint.AzureDevOps;
 
 public static class Client
 {
-    public static async Task<ClientResult<BuildsResponse>> ListBuildsAsync(
+    public static async Task<ClientResult<BuildsResponsePaginated>> ListBuildsAsync(
         HttpClient client,
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        return await SendAndDeserializeAsync<BuildsResponse>(
-            client,
-            request,
-            System.Net.HttpStatusCode.OK,
-            static bytes => APISerializer.DeserializeBuildsResponse(bytes),
-            cancellationToken);
+        try
+        {
+            using var response = await client.SendAsync(request, cancellationToken);
+            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                return new ClientResult<BuildsResponsePaginated>
+                {
+                    Status = ClientStatus.Failed,
+                };
+            }
+
+            var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+            var deserialization = APISerializer.DeserializeBuildsResponse(bytes);
+            if (deserialization.Status != DeserializationStatus.Success)
+            {
+                return new ClientResult<BuildsResponsePaginated>
+                {
+                    Status = ClientStatus.Exception,
+                    Exception = new InvalidOperationException("Deserialization failed"),
+                };
+            }
+
+            var continuationToken = response.Headers.TryGetValues("x-ms-continuationtoken", out var tokenValues)
+                ? tokenValues.FirstOrDefault()
+                : null;
+            return new ClientResult<BuildsResponsePaginated>
+            {
+                Status = ClientStatus.Success,
+                Value = new BuildsResponsePaginated(deserialization.Value, continuationToken),
+            };
+        }
+        catch (OperationCanceledException)
+        {
+            return new ClientResult<BuildsResponsePaginated>
+            {
+                Status = ClientStatus.Cancelled,
+            };
+        }
+        catch (Exception exception)
+        {
+            return new ClientResult<BuildsResponsePaginated>
+            {
+                Status = ClientStatus.Exception,
+                Exception = exception,
+            };
+        }
     }
 
     public static async Task<ClientResult<Build>> GetBuildAsync(
@@ -268,6 +308,8 @@ public struct ClientResult<T>
     public Exception Exception { get; init; }
 
 }
+
+public readonly record struct BuildsResponsePaginated(BuildsResponse Response, string? ContinuationToken);
 
 public enum ClientStatus
 {

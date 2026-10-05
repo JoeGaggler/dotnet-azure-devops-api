@@ -19,6 +19,10 @@ Version:       7.2-preview.8
 Request Method: ListBuildsRequest
 Response Model: Pingmint.AzureDevOps.BuildsResponse
 
+Pagination: `Client.ListBuildsAsync` returns `ClientResult<BuildsResponsePaginated>`. Its `Value.Response` contains the JSON model, and `Value.ContinuationToken` contains the next page token or `null` when the response has no `x-ms-continuationtoken` header. Pass a non-null token to `HttpRequestFactory.ListBuildsRequest` as `continuationToken` with the same filters to fetch the next page. The token is an HTTP response header, not a field in `BuildsResponse`.
+
+The [Builds - List reference](https://learn.microsoft.com/en-us/rest/api/azure/devops/build/builds/list?view=azure-devops-rest-7.2) says the token comes from a previous call but does not name the header. Microsoft's [Azure DevOps extension API `getBuilds` implementation](https://github.com/microsoft/azure-devops-extension-api/blob/master/src/Build/BuildClient.ts) reads `x-ms-continuationtoken` from the response headers for the same `7.2-preview.8` operation.
+
 ##### Get Build
 
 Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/build/builds/get?view=azure-devops-rest-7.2
