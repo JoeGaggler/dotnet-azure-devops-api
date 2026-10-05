@@ -4,6 +4,207 @@ namespace Pingmint.AzureDevOps;
 
 public static class HttpRequestFactory
 {
+    private const string ExtensionDataApiVersion = "7.2-preview.1";
+
+    /// <summary>
+    /// Retrieves a document from an extension data collection by its ID.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="publisherName">The name of the publisher that owns the extension.</param>
+    /// <param name="extensionName">The name of the extension.</param>
+    /// <param name="collectionName">The name of the collection containing the document.</param>
+    /// <param name="documentId">The ID of the document to retrieve.</param>
+    /// <param name="scopeType">The scope type. Defaults to the extension-wide scope.</param>
+    /// <param name="scopeValue">The scope value. Defaults to the current extension scope.</param>
+    /// <returns>An HTTP request message for the Get a document by ID operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.1.
+    /// See <see href="https://learn.microsoft.com/en-us/azure/devops/extend/develop/data-storage?view=azure-devops">the official Azure DevOps data storage documentation</see>.
+    /// </remarks>
+    public static HttpRequestMessage GetExtensionDataDocumentRequest(
+        string organization,
+        string publisherName,
+        string extensionName,
+        string collectionName,
+        string documentId,
+        string scopeType = "Default",
+        string scopeValue = "Current")
+    {
+        var url = GetExtensionDataDocumentsUrl(organization, publisherName, extensionName, collectionName, scopeType, scopeValue, documentId);
+        return CreateExtensionDataRequest(HttpMethod.Get, url);
+    }
+
+    /// <summary>
+    /// Creates a document in an extension data collection.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="publisherName">The name of the publisher that owns the extension.</param>
+    /// <param name="extensionName">The name of the extension.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="documentJson">The JSON document to create. If it omits <c>id</c>, the service generates an ID.</param>
+    /// <param name="scopeType">The scope type. Defaults to the extension-wide scope.</param>
+    /// <param name="scopeValue">The scope value. Defaults to the current extension scope.</param>
+    /// <returns>An HTTP request message for the Create a document operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.1.
+    /// See <see href="https://learn.microsoft.com/en-us/azure/devops/extend/develop/data-storage?view=azure-devops#create-a-document">the official Azure DevOps data storage documentation</see>.
+    /// The document body, including any supplied <c>__etag</c>, is sent unchanged.
+    /// </remarks>
+    public static HttpRequestMessage CreateExtensionDataDocumentRequest(
+        string organization,
+        string publisherName,
+        string extensionName,
+        string collectionName,
+        string documentJson,
+        string scopeType = "Default",
+        string scopeValue = "Current")
+    {
+        var url = GetExtensionDataDocumentsUrl(organization, publisherName, extensionName, collectionName, scopeType, scopeValue);
+        return CreateExtensionDataRequest(HttpMethod.Post, url, documentJson);
+    }
+
+    /// <summary>
+    /// Creates or replaces a document in an extension data collection.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="publisherName">The name of the publisher that owns the extension.</param>
+    /// <param name="extensionName">The name of the extension.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="documentJson">The JSON document to set, including its <c>id</c> and any <c>__etag</c>.</param>
+    /// <param name="scopeType">The scope type. Defaults to the extension-wide scope.</param>
+    /// <param name="scopeValue">The scope value. Defaults to the current extension scope.</param>
+    /// <returns>An HTTP request message for the Set a document operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.1.
+    /// See <see href="https://learn.microsoft.com/en-us/azure/devops/extend/develop/data-storage?view=azure-devops#set-a-document-update-or-create">the official Azure DevOps data storage documentation</see>.
+    /// The body is sent unchanged so the service can apply the supplied <c>__etag</c> concurrency behavior, including <c>-1</c> for last-write-wins.
+    /// </remarks>
+    public static HttpRequestMessage SetExtensionDataDocumentRequest(
+        string organization,
+        string publisherName,
+        string extensionName,
+        string collectionName,
+        string documentJson,
+        string scopeType = "Default",
+        string scopeValue = "Current")
+    {
+        var url = GetExtensionDataDocumentsUrl(organization, publisherName, extensionName, collectionName, scopeType, scopeValue);
+        return CreateExtensionDataRequest(HttpMethod.Put, url, documentJson);
+    }
+
+    /// <summary>
+    /// Updates an existing document in an extension data collection.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="publisherName">The name of the publisher that owns the extension.</param>
+    /// <param name="extensionName">The name of the extension.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="documentJson">The existing JSON document to update, including its <c>id</c> and current <c>__etag</c>.</param>
+    /// <param name="scopeType">The scope type. Defaults to the extension-wide scope.</param>
+    /// <param name="scopeValue">The scope value. Defaults to the current extension scope.</param>
+    /// <returns>An HTTP request message for the Update a document operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.1.
+    /// See <see href="https://learn.microsoft.com/en-us/azure/devops/extend/develop/data-storage?view=azure-devops#update-a-document">the official Azure DevOps data storage documentation</see>.
+    /// The body is sent unchanged. The service compares <c>__etag</c> with the stored version; <c>-1</c> requests last-write-wins behavior.
+    /// </remarks>
+    public static HttpRequestMessage UpdateExtensionDataDocumentRequest(
+        string organization,
+        string publisherName,
+        string extensionName,
+        string collectionName,
+        string documentJson,
+        string scopeType = "Default",
+        string scopeValue = "Current")
+    {
+        var url = GetExtensionDataDocumentsUrl(organization, publisherName, extensionName, collectionName, scopeType, scopeValue);
+        return CreateExtensionDataRequest(HttpMethod.Patch, url, documentJson);
+    }
+
+    /// <summary>
+    /// Deletes a document from an extension data collection by its ID.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="publisherName">The name of the publisher that owns the extension.</param>
+    /// <param name="extensionName">The name of the extension.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="documentId">The ID of the document to delete.</param>
+    /// <param name="scopeType">The scope type. Defaults to the extension-wide scope.</param>
+    /// <param name="scopeValue">The scope value. Defaults to the current extension scope.</param>
+    /// <returns>An HTTP request message for the Delete a document operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.1.
+    /// See <see href="https://learn.microsoft.com/en-us/azure/devops/extend/develop/data-storage?view=azure-devops#delete-a-document">the official Azure DevOps data storage documentation</see>.
+    /// This operation has no document body or <c>__etag</c> parameter.
+    /// </remarks>
+    public static HttpRequestMessage DeleteExtensionDataDocumentRequest(
+        string organization,
+        string publisherName,
+        string extensionName,
+        string collectionName,
+        string documentId,
+        string scopeType = "Default",
+        string scopeValue = "Current")
+    {
+        var url = GetExtensionDataDocumentsUrl(organization, publisherName, extensionName, collectionName, scopeType, scopeValue, documentId);
+        return CreateExtensionDataRequest(HttpMethod.Delete, url);
+    }
+
+    /// <summary>
+    /// Retrieves all documents in an extension data collection.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="publisherName">The name of the publisher that owns the extension.</param>
+    /// <param name="extensionName">The name of the extension.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="scopeType">The scope type. Defaults to the extension-wide scope.</param>
+    /// <param name="scopeValue">The scope value. Defaults to the current extension scope.</param>
+    /// <returns>An HTTP request message for the Get all documents in a collection operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.1.
+    /// See <see href="https://learn.microsoft.com/en-us/azure/devops/extend/develop/data-storage?view=azure-devops#get-all-documents-in-a-collection">the official Azure DevOps data storage documentation</see>.
+    /// Each returned document retains its own <c>__etag</c>.
+    /// </remarks>
+    public static HttpRequestMessage GetExtensionDataDocumentsRequest(
+        string organization,
+        string publisherName,
+        string extensionName,
+        string collectionName,
+        string scopeType = "Default",
+        string scopeValue = "Current")
+    {
+        var url = GetExtensionDataDocumentsUrl(organization, publisherName, extensionName, collectionName, scopeType, scopeValue);
+        return CreateExtensionDataRequest(HttpMethod.Get, url);
+    }
+
+    private static string GetExtensionDataDocumentsUrl(
+        string organization,
+        string publisherName,
+        string extensionName,
+        string collectionName,
+        string scopeType,
+        string scopeValue,
+        string? documentId = null)
+    {
+        var organizationSegment = Uri.EscapeDataString(organization);
+        var publisherSegment = Uri.EscapeDataString(publisherName);
+        var extensionSegment = Uri.EscapeDataString(extensionName);
+        var scopeTypeSegment = Uri.EscapeDataString(scopeType);
+        var scopeValueSegment = Uri.EscapeDataString(scopeValue);
+        var collectionSegment = Uri.EscapeDataString(collectionName);
+        var documentSegment = documentId is null ? string.Empty : $"/{Uri.EscapeDataString(documentId)}";
+        return $"https://extmgmt.dev.azure.com/{organizationSegment}/_apis/ExtensionManagement/InstalledExtensions/{publisherSegment}/{extensionSegment}/Data/Scopes/{scopeTypeSegment}/{scopeValueSegment}/Collections/{collectionSegment}/Documents{documentSegment}?api-version={ExtensionDataApiVersion}";
+    }
+
+    private static HttpRequestMessage CreateExtensionDataRequest(HttpMethod method, string url, string? documentJson = null)
+    {
+        var request = new HttpRequestMessage(method, new Uri(url, UriKind.Absolute));
+        if (documentJson is not null)
+            request.Content = new StringContent(documentJson, System.Text.Encoding.UTF8, "application/json");
+
+        return request;
+    }
+
     /// <summary>
     /// Gets a list of builds.
     /// </summary>

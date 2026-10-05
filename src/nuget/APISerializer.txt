@@ -112,6 +112,15 @@ Pingmint.AzureDevOps.Demand
 - "name" => Name : string
 - "value" => Value : string
 
+// Extension Management
+
+Pingmint.AzureDevOps.ExtensionDataDocument
+- "id" => Id : string
+- "__etag" => ETag : int
+
+Pingmint.AzureDevOps.ExtensionDataDocumentsEnvelope
+- "documents" => Documents : [Pingmint.AzureDevOps.ExtensionDataDocument]
+
 //
 // Git
 //

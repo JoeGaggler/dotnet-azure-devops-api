@@ -2,6 +2,110 @@ namespace Pingmint.AzureDevOps;
 
 public static class Client
 {
+    public static async Task<ClientResult<ExtensionDataDocumentResponse>> GetExtensionDataDocumentAsync(
+        HttpClient client,
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        return await SendAndDeserializeAsync<ExtensionDataDocumentResponse>(
+            client,
+            request,
+            static statusCode => (int)statusCode >= 200 && (int)statusCode < 300,
+            static bytes => APISerializer.DeserializeExtensionDataDocument(bytes),
+            cancellationToken);
+    }
+
+    public static async Task<ClientResult<ExtensionDataDocumentResponse>> CreateExtensionDataDocumentAsync(
+        HttpClient client,
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        return await SendAndDeserializeAsync<ExtensionDataDocumentResponse>(
+            client,
+            request,
+            static statusCode => (int)statusCode >= 200 && (int)statusCode < 300,
+            static bytes => APISerializer.DeserializeExtensionDataDocument(bytes),
+            cancellationToken);
+    }
+
+    public static async Task<ClientResult<ExtensionDataDocumentResponse>> SetExtensionDataDocumentAsync(
+        HttpClient client,
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        return await SendAndDeserializeAsync<ExtensionDataDocumentResponse>(
+            client,
+            request,
+            static statusCode => (int)statusCode >= 200 && (int)statusCode < 300,
+            static bytes => APISerializer.DeserializeExtensionDataDocument(bytes),
+            cancellationToken);
+    }
+
+    public static async Task<ClientResult<ExtensionDataDocumentResponse>> UpdateExtensionDataDocumentAsync(
+        HttpClient client,
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        return await SendAndDeserializeAsync<ExtensionDataDocumentResponse>(
+            client,
+            request,
+            static statusCode => (int)statusCode >= 200 && (int)statusCode < 300,
+            static bytes => APISerializer.DeserializeExtensionDataDocument(bytes),
+            cancellationToken);
+    }
+
+    public static async Task<ClientResult<Boolean>> DeleteExtensionDataDocumentAsync(
+        HttpClient client,
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var response = await client.SendAsync(request, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                return new ClientResult<Boolean>
+                {
+                    Status = ClientStatus.Failed,
+                };
+            }
+
+            return new ClientResult<Boolean>
+            {
+                Status = ClientStatus.Success,
+                Value = true,
+            };
+        }
+        catch (OperationCanceledException)
+        {
+            return new ClientResult<Boolean>
+            {
+                Status = ClientStatus.Cancelled,
+            };
+        }
+        catch (Exception exception)
+        {
+            return new ClientResult<Boolean>
+            {
+                Status = ClientStatus.Exception,
+                Exception = exception,
+            };
+        }
+    }
+
+    public static async Task<ClientResult<ExtensionDataDocumentsResponse>> GetExtensionDataDocumentsAsync(
+        HttpClient client,
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        return await SendAndDeserializeAsync<ExtensionDataDocumentsResponse>(
+            client,
+            request,
+            static statusCode => (int)statusCode >= 200 && (int)statusCode < 300,
+            static bytes => APISerializer.DeserializeExtensionDataDocuments(bytes),
+            cancellationToken);
+    }
+
     public static async Task<ClientResult<BuildsResponsePaginated>> ListBuildsAsync(
         HttpClient client,
         HttpRequestMessage request,
@@ -258,10 +362,26 @@ public static class Client
         CancellationToken cancellationToken
         )
     {
+        return await SendAndDeserializeAsync(
+            client,
+            request,
+            statusCode => statusCode == successStatusCode,
+            deserialize,
+            cancellationToken);
+    }
+
+    private static async Task<ClientResult<T>> SendAndDeserializeAsync<T>(
+        HttpClient client,
+        HttpRequestMessage request,
+        Func<System.Net.HttpStatusCode, Boolean> isSuccessStatusCode,
+        Func<Byte[], DeserializationResult<T>> deserialize,
+        CancellationToken cancellationToken
+        )
+    {
         try
         {
             using var response = await client.SendAsync(request, cancellationToken);
-            if (response.StatusCode != successStatusCode)
+            if (!isSuccessStatusCode(response.StatusCode))
             {
                 return new ClientResult<T>
                 {

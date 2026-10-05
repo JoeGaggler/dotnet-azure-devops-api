@@ -14,6 +14,209 @@ public sealed class APISerializerTests
     }
 
     [TestMethod]
+    public void GetExtensionDataDocumentRequestEscapesRouteValuesAndUsesDocumentedVersion()
+    {
+        using var request = HttpRequestFactory.GetExtensionDataDocumentRequest(
+            "org name",
+            "publisher name",
+            "extension/name",
+            "collection & name",
+            "document/id");
+
+        Assert.AreEqual(HttpMethod.Get, request.Method);
+        Assert.AreEqual(
+            "https://extmgmt.dev.azure.com/org%20name/_apis/ExtensionManagement/InstalledExtensions/publisher%20name/extension%2Fname/Data/Scopes/Default/Current/Collections/collection%20%26%20name/Documents/document%2Fid?api-version=7.2-preview.1",
+            request.RequestUri!.AbsoluteUri);
+
+        using var userScopedRequest = HttpRequestFactory.GetExtensionDataDocumentRequest(
+            "organization", "publisher", "extension", "collection", "document-id", "User", "Me");
+        StringAssert.Contains(userScopedRequest.RequestUri!.AbsoluteUri, "/Scopes/User/Me/");
+    }
+
+    [TestMethod]
+    public async Task ExtensionDataDocumentMutationRequestsPreserveEtagAndUseDocumentedMethods()
+    {
+        using var createRequest = HttpRequestFactory.CreateExtensionDataDocumentRequest(
+            "organization", "publisher", "extension", "collection", "{\"id\":\"new-document\",\"name\":\"created\"}");
+        using var setRequest = HttpRequestFactory.SetExtensionDataDocumentRequest(
+            "organization", "publisher", "extension", "collection", "{\"id\":\"set-document\",\"__etag\":-1,\"name\":\"set\"}");
+        using var updateRequest = HttpRequestFactory.UpdateExtensionDataDocumentRequest(
+            "organization", "publisher", "extension", "collection", "{\"id\":\"update-document\",\"__etag\":17,\"name\":\"updated\"}",
+            scopeType: "User", scopeValue: "Me");
+
+        Assert.AreEqual(HttpMethod.Post, createRequest.Method);
+        Assert.AreEqual(HttpMethod.Put, setRequest.Method);
+        Assert.AreEqual(HttpMethod.Patch, updateRequest.Method);
+        Assert.AreEqual(
+            "https://extmgmt.dev.azure.com/organization/_apis/ExtensionManagement/InstalledExtensions/publisher/extension/Data/Scopes/Default/Current/Collections/collection/Documents?api-version=7.2-preview.1",
+            createRequest.RequestUri!.AbsoluteUri);
+        Assert.AreEqual(createRequest.RequestUri.AbsoluteUri, setRequest.RequestUri!.AbsoluteUri);
+        Assert.AreEqual(
+            "https://extmgmt.dev.azure.com/organization/_apis/ExtensionManagement/InstalledExtensions/publisher/extension/Data/Scopes/User/Me/Collections/collection/Documents?api-version=7.2-preview.1",
+            updateRequest.RequestUri!.AbsoluteUri);
+
+        using var createBody = JsonDocument.Parse(await createRequest.Content!.ReadAsByteArrayAsync());
+        using var setBody = JsonDocument.Parse(await setRequest.Content!.ReadAsByteArrayAsync());
+        using var updateBody = JsonDocument.Parse(await updateRequest.Content!.ReadAsByteArrayAsync());
+        Assert.IsFalse(createBody.RootElement.TryGetProperty("__etag", out _));
+        Assert.AreEqual(-1, setBody.RootElement.GetProperty("__etag").GetInt32());
+        Assert.AreEqual(17, updateBody.RootElement.GetProperty("__etag").GetInt32());
+    }
+
+    [TestMethod]
+    public void ExtensionDataDocumentDeleteAndGetAllRequestsUseCollectionRoutes()
+    {
+        using var deleteRequest = HttpRequestFactory.DeleteExtensionDataDocumentRequest(
+            "organization", "publisher", "extension", "collection", "document-id");
+        using var getAllRequest = HttpRequestFactory.GetExtensionDataDocumentsRequest(
+            "organization", "publisher", "extension", "collection");
+
+        Assert.AreEqual(HttpMethod.Delete, deleteRequest.Method);
+        Assert.IsNull(deleteRequest.Content);
+        Assert.AreEqual(HttpMethod.Get, getAllRequest.Method);
+        Assert.AreEqual(
+            "https://extmgmt.dev.azure.com/organization/_apis/ExtensionManagement/InstalledExtensions/publisher/extension/Data/Scopes/Default/Current/Collections/collection/Documents/document-id?api-version=7.2-preview.1",
+            deleteRequest.RequestUri!.AbsoluteUri);
+        Assert.AreEqual(
+            "https://extmgmt.dev.azure.com/organization/_apis/ExtensionManagement/InstalledExtensions/publisher/extension/Data/Scopes/Default/Current/Collections/collection/Documents?api-version=7.2-preview.1",
+            getAllRequest.RequestUri!.AbsoluteUri);
+    }
+
+    [TestMethod]
+    public void DeserializeExtensionDataDocumentPreservesCustomProperties()
+    {
+        var result = APISerializer.DeserializeExtensionDataDocument(
+            """{"id":"document-id","__etag":3,"name":"sample","settings":{"enabled":true}}"""u8);
+        var stringResult = APISerializer.DeserializeExtensionDataDocument(
+            """{"id":"string-document","__etag":4,"value":"text"}""");
+        using var documentJson = JsonDocument.Parse(result.Value.Json);
+        using var stringDocumentJson = JsonDocument.Parse(stringResult.Value.Json);
+
+        Assert.AreEqual(DeserializationStatus.Success, result.Status);
+        Assert.AreEqual("document-id", result.Value.Response.Id);
+        Assert.AreEqual(3, result.Value.Response.ETag);
+        Assert.AreEqual("sample", documentJson.RootElement.GetProperty("name").GetString());
+        Assert.IsTrue(documentJson.RootElement.GetProperty("settings").GetProperty("enabled").GetBoolean());
+        Assert.AreEqual(DeserializationStatus.Success, stringResult.Status);
+        Assert.AreEqual("string-document", stringResult.Value.Response.Id);
+        Assert.AreEqual("string-document", stringDocumentJson.RootElement.GetProperty("id").GetString());
+        Assert.AreEqual("text", stringDocumentJson.RootElement.GetProperty("value").GetString());
+    }
+
+    [TestMethod]
+    public void DeserializeExtensionDataDocumentDistinguishesInvalidAndIncompletePayloads()
+    {
+        var empty = APISerializer.DeserializeExtensionDataDocument(ReadOnlySpan<Byte>.Empty);
+        var invalidRoot = APISerializer.DeserializeExtensionDataDocument("[]"u8);
+        var malformed = APISerializer.DeserializeExtensionDataDocument("{\"id\":"u8);
+        var missingId = APISerializer.DeserializeExtensionDataDocument("{\"__etag\":1}"u8);
+        var missingETag = APISerializer.DeserializeExtensionDataDocument("{\"id\":\"document-id\"}"u8);
+
+        Assert.AreEqual(DeserializationStatus.Failure, empty.Status);
+        Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
+        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+        Assert.AreEqual(DeserializationStatus.ModelValidationFailure, missingId.Status);
+        Assert.AreEqual(DeserializationStatus.ModelValidationFailure, missingETag.Status);
+    }
+
+    [TestMethod]
+    public async Task GetExtensionDataDocumentAsyncReturnsDeserializedDocument()
+    {
+        using var client = new HttpClient(new ExtensionDataDocumentResponseHandler(
+            "{\"id\":\"document-id\",\"__etag\":1,\"kind\":\"document\"}"));
+        using var request = HttpRequestFactory.GetExtensionDataDocumentRequest(
+            "organization", "publisher", "extension", "collection", "document-id");
+
+        var result = await Client.GetExtensionDataDocumentAsync(client, request, CancellationToken.None);
+        using var documentJson = JsonDocument.Parse(result.Value.Json);
+
+        Assert.AreEqual(ClientStatus.Success, result.Status);
+        Assert.AreEqual("document-id", documentJson.RootElement.GetProperty("id").GetString());
+        Assert.AreEqual("document", documentJson.RootElement.GetProperty("kind").GetString());
+        Assert.AreEqual(1, result.Value.Response.ETag);
+    }
+
+    [TestMethod]
+    public void DeserializeExtensionDataDocumentsPreservesEachDocumentAndEtag()
+    {
+        var envelopeJson = """{"documents":[{"id":"one","__etag":2},{"id":"two","__etag":-1}]}"""u8;
+        var envelopeReader = new Utf8JsonReader(envelopeJson);
+        Assert.IsTrue(envelopeReader.Read());
+        var envelope = new ExtensionDataDocumentsEnvelope();
+        APISerializer.Deserialize(ref envelopeReader, envelope);
+        Assert.HasCount(2, envelope.Documents!);
+
+        var result = APISerializer.DeserializeExtensionDataDocuments(
+            """[{"id":"one","__etag":2,"value":1},{"id":"two","__etag":-1,"value":{"ok":true}}]"""u8);
+        using var documentsJson = JsonDocument.Parse(result.Value.Json);
+
+        Assert.AreEqual(DeserializationStatus.Success, result.Status);
+        Assert.HasCount(2, result.Value.Documents);
+        Assert.AreEqual("one", result.Value.Documents[0].Id);
+        Assert.AreEqual(2, result.Value.Documents[0].ETag);
+        Assert.AreEqual(-1, result.Value.Documents[1].ETag);
+        Assert.IsTrue(documentsJson.RootElement[1].GetProperty("value").GetProperty("ok").GetBoolean());
+
+        var missingDocumentFields = APISerializer.DeserializeExtensionDataDocuments("[{}]"u8);
+        var malformed = APISerializer.DeserializeExtensionDataDocuments("[{]"u8);
+        Assert.AreEqual(DeserializationStatus.ModelValidationFailure, missingDocumentFields.Status);
+        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+    }
+
+    [TestMethod]
+    public async Task ExtensionDataDocumentClientMethodsReturnDocumentAndCollectionResults()
+    {
+        const string singleDocument = "{\"id\":\"document-id\",\"__etag\":8,\"kind\":\"document\"}";
+        using var createdClient = new HttpClient(new ExtensionDataDocumentResponseHandler(
+            singleDocument,
+            System.Net.HttpStatusCode.Created));
+        using var client = new HttpClient(new ExtensionDataDocumentResponseHandler(singleDocument));
+        using var createRequest = HttpRequestFactory.CreateExtensionDataDocumentRequest(
+            "organization", "publisher", "extension", "collection", "{\"id\":\"document-id\",\"__etag\":-1}");
+        using var setRequest = HttpRequestFactory.SetExtensionDataDocumentRequest(
+            "organization", "publisher", "extension", "collection", "{\"id\":\"document-id\",\"__etag\":-1}");
+        using var updateRequest = HttpRequestFactory.UpdateExtensionDataDocumentRequest(
+            "organization", "publisher", "extension", "collection", "{\"id\":\"document-id\",\"__etag\":-1}");
+        using var deleteRequest = HttpRequestFactory.DeleteExtensionDataDocumentRequest(
+            "organization", "publisher", "extension", "collection", "document-id");
+
+        var created = await Client.CreateExtensionDataDocumentAsync(createdClient, createRequest, CancellationToken.None);
+        var set = await Client.SetExtensionDataDocumentAsync(client, setRequest, CancellationToken.None);
+        var updated = await Client.UpdateExtensionDataDocumentAsync(client, updateRequest, CancellationToken.None);
+        var deleted = await Client.DeleteExtensionDataDocumentAsync(client, deleteRequest, CancellationToken.None);
+
+        Assert.AreEqual(ClientStatus.Success, created.Status);
+        Assert.AreEqual(8, created.Value.Response.ETag);
+        Assert.AreEqual(ClientStatus.Success, set.Status);
+        Assert.AreEqual(ClientStatus.Success, updated.Status);
+        Assert.AreEqual(ClientStatus.Success, deleted.Status);
+        Assert.IsTrue(deleted.Value);
+
+        using var listClient = new HttpClient(new ExtensionDataDocumentResponseHandler(
+            "[{\"id\":\"document-id\",\"__etag\":8,\"kind\":\"document\"}]"));
+        using var getAllRequest = HttpRequestFactory.GetExtensionDataDocumentsRequest(
+            "organization", "publisher", "extension", "collection");
+        var documents = await Client.GetExtensionDataDocumentsAsync(listClient, getAllRequest, CancellationToken.None);
+
+        Assert.AreEqual(ClientStatus.Success, documents.Status);
+        Assert.HasCount(1, documents.Value.Documents);
+        Assert.AreEqual(8, documents.Value.Documents[0].ETag);
+    }
+
+    private sealed class ExtensionDataDocumentResponseHandler(
+        string content,
+        System.Net.HttpStatusCode statusCode = System.Net.HttpStatusCode.OK) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(new HttpResponseMessage(statusCode)
+            {
+                Content = new StringContent(content),
+            });
+        }
+    }
+
+    [TestMethod]
     public void DeserializeBuildsResponseWithInvalidOrMalformedPayloadReturnsFailure()
     {
         var invalidRoot = APISerializer.DeserializeBuildsResponse("[]"u8);

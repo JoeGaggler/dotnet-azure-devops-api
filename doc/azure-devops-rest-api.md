@@ -6,6 +6,82 @@ https://learn.microsoft.com/en-us/rest/api/azure/devops
 
 This section contains the list of APIs which this library supports.
 
+### Extension Management
+
+#### Extension Data
+
+##### Get a document by ID
+
+Documentation:  https://learn.microsoft.com/en-us/azure/devops/extend/develop/data-storage?view=azure-devops#get-a-document-by-id
+Reference Code: https://github.com/microsoft/azure-devops-extension-api/blob/master/src/ExtensionManagement/ExtensionManagementClient.ts
+Endpoint:       GET https://extmgmt.dev.azure.com/{organization}/_apis/ExtensionManagement/InstalledExtensions/{publisherName}/{extensionName}/Data/Scopes/Default/Current/Collections/{collectionName}/Documents/{documentId}
+Version:        7.2-preview.1
+
+Request Method: GetExtensionDataDocumentRequest
+Response Model: Pingmint.AzureDevOps.ExtensionDataDocumentResponse
+
+The operation route and version are confirmed by Microsoft's [Azure DevOps extension API client](https://github.com/microsoft/azure-devops-extension-api/blob/master/src/ExtensionManagement/ExtensionManagementClient.ts). The response wrapper retains the complete document payload as JSON text.
+
+##### Create a document
+
+Documentation:  https://learn.microsoft.com/en-us/azure/devops/extend/develop/data-storage?view=azure-devops#create-a-document
+Reference Code: https://github.com/microsoft/azure-devops-extension-api/blob/master/src/ExtensionManagement/ExtensionManagementClient.ts
+Endpoint:       POST https://extmgmt.dev.azure.com/{organization}/_apis/ExtensionManagement/InstalledExtensions/{publisherName}/{extensionName}/Data/Scopes/{scopeType}/{scopeValue}/Collections/{collectionName}/Documents
+Version:        7.2-preview.1
+
+Request Method: CreateExtensionDataDocumentRequest
+Response Model: Pingmint.AzureDevOps.ExtensionDataDocumentResponse
+
+The JSON request body string is sent unchanged. A supplied `__etag` is preserved; the response wrapper retains the resulting document payload and its current `__etag`.
+
+##### Set a document (update or create)
+
+Documentation:  https://learn.microsoft.com/en-us/azure/devops/extend/develop/data-storage?view=azure-devops#set-a-document-update-or-create
+Reference Code: https://github.com/microsoft/azure-devops-extension-api/blob/master/src/ExtensionManagement/ExtensionManagementClient.ts
+Endpoint:       PUT https://extmgmt.dev.azure.com/{organization}/_apis/ExtensionManagement/InstalledExtensions/{publisherName}/{extensionName}/Data/Scopes/{scopeType}/{scopeValue}/Collections/{collectionName}/Documents
+Version:        7.2-preview.1
+
+Request Method: SetExtensionDataDocumentRequest
+Response Model: Pingmint.AzureDevOps.ExtensionDataDocumentResponse
+
+The request document JSON string, including `id` and `__etag`, is sent unchanged. The service performs the documented upsert and applies the supplied ETag concurrency behavior.
+
+##### Update a document
+
+Documentation:  https://learn.microsoft.com/en-us/azure/devops/extend/develop/data-storage?view=azure-devops#update-a-document
+Reference Code: https://github.com/microsoft/azure-devops-extension-api/blob/master/src/ExtensionManagement/ExtensionManagementClient.ts
+Endpoint:       PATCH https://extmgmt.dev.azure.com/{organization}/_apis/ExtensionManagement/InstalledExtensions/{publisherName}/{extensionName}/Data/Scopes/{scopeType}/{scopeValue}/Collections/{collectionName}/Documents
+Version:        7.2-preview.1
+
+Request Method: UpdateExtensionDataDocumentRequest
+Response Model: Pingmint.AzureDevOps.ExtensionDataDocumentResponse
+
+The request document JSON string and its `__etag` are sent unchanged. The service compares the ETag with the stored version; `-1` requests last-write-wins behavior.
+
+##### Delete a document
+
+Documentation:  https://learn.microsoft.com/en-us/azure/devops/extend/develop/data-storage?view=azure-devops#delete-a-document
+Reference Code: https://github.com/microsoft/azure-devops-extension-api/blob/master/src/ExtensionManagement/ExtensionManagementClient.ts
+Endpoint:       DELETE https://extmgmt.dev.azure.com/{organization}/_apis/ExtensionManagement/InstalledExtensions/{publisherName}/{extensionName}/Data/Scopes/{scopeType}/{scopeValue}/Collections/{collectionName}/Documents/{documentId}
+Version:        7.2-preview.1
+
+Request Method: DeleteExtensionDataDocumentRequest
+Response Model: None
+
+The documented delete operation does not take a document body or `__etag`.
+
+##### Get all documents in a collection
+
+Documentation:  https://learn.microsoft.com/en-us/azure/devops/extend/develop/data-storage?view=azure-devops#get-all-documents-in-a-collection
+Reference Code: https://github.com/microsoft/azure-devops-extension-api/blob/master/src/ExtensionManagement/ExtensionManagementClient.ts
+Endpoint:       GET https://extmgmt.dev.azure.com/{organization}/_apis/ExtensionManagement/InstalledExtensions/{publisherName}/{extensionName}/Data/Scopes/{scopeType}/{scopeValue}/Collections/{collectionName}/Documents
+Version:        7.2-preview.1
+
+Request Method: GetExtensionDataDocumentsRequest
+Response Model: Pingmint.AzureDevOps.ExtensionDataDocumentsResponse
+
+The generated `ExtensionDataDocumentsEnvelope` model deserializes the array. `ExtensionDataDocumentsResponse.Documents` exposes the typed documents and their `__etag` values, while `Json` retains the original array payload.
+
 ### Build
 
 #### Builds

@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Text.Json;
 
 namespace Pingmint.AzureDevOps;
@@ -561,7 +562,116 @@ partial class APISerializer
             Value = result,
         };
     }
+
+    public static DeserializationResult<ExtensionDataDocumentResponse> DeserializeExtensionDataDocument(String json)
+    {
+        if (!TryGetUtf8ByteArrayFromString(json, out var bytes, out var bytesWritten))
+        {
+            return new DeserializationResult<ExtensionDataDocumentResponse>
+            {
+                Status = DeserializationStatus.Failure,
+                Value = new ExtensionDataDocumentResponse(new ExtensionDataDocument(), String.Empty),
+            };
+        }
+
+        return DeserializeExtensionDataDocument(bytes.AsSpan(0, bytesWritten));
+    }
+
+    public static DeserializationResult<ExtensionDataDocumentResponse> DeserializeExtensionDataDocument(ReadOnlySpan<Byte> json)
+    {
+        var result = new ExtensionDataDocument();
+        var status = DeserializationStatus.None;
+        var reader = new Utf8JsonReader(json);
+
+        try
+        {
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+            {
+                status = DeserializationStatus.Failure;
+            }
+            else
+            {
+                Deserialize(ref reader, result);
+                if (result.Id is null || result.ETag is null)
+                {
+                    status = DeserializationStatus.ModelValidationFailure;
+                }
+                else
+                {
+                    status = DeserializationStatus.Success;
+                }
+            }
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        {
+            status = DeserializationStatus.Failure;
+        }
+
+        return new DeserializationResult<ExtensionDataDocumentResponse>
+        {
+            Status = status,
+            Value = new ExtensionDataDocumentResponse(result, System.Text.Encoding.UTF8.GetString(json)),
+        };
+    }
+
+    public static DeserializationResult<ExtensionDataDocumentsResponse> DeserializeExtensionDataDocuments(String json)
+    {
+        if (!TryGetUtf8ByteArrayFromString(json, out var bytes, out var bytesWritten))
+        {
+            return new DeserializationResult<ExtensionDataDocumentsResponse>
+            {
+                Status = DeserializationStatus.Failure,
+                Value = new ExtensionDataDocumentsResponse([], String.Empty),
+            };
+        }
+
+        return DeserializeExtensionDataDocuments(bytes.AsSpan(0, bytesWritten));
+    }
+
+    public static DeserializationResult<ExtensionDataDocumentsResponse> DeserializeExtensionDataDocuments(ReadOnlySpan<Byte> json)
+    {
+        var envelope = new ExtensionDataDocumentsEnvelope();
+        var status = DeserializationStatus.None;
+
+        try
+        {
+            ReadOnlySpan<Byte> prefix = "{\"documents\":"u8;
+            ReadOnlySpan<Byte> suffix = "}"u8;
+            var wrappedJson = new Byte[prefix.Length + json.Length + suffix.Length];
+            prefix.CopyTo(wrappedJson);
+            json.CopyTo(wrappedJson.AsSpan(prefix.Length));
+            suffix.CopyTo(wrappedJson.AsSpan(prefix.Length + json.Length));
+
+            var reader = new Utf8JsonReader(wrappedJson);
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+            {
+                status = DeserializationStatus.Failure;
+            }
+            else
+            {
+                Deserialize(ref reader, envelope);
+                status = envelope.Documents is null || envelope.Documents.Any(document => document.Id is null || document.ETag is null)
+                    ? DeserializationStatus.ModelValidationFailure
+                    : DeserializationStatus.Success;
+            }
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        {
+            status = DeserializationStatus.Failure;
+        }
+
+        return new DeserializationResult<ExtensionDataDocumentsResponse>
+        {
+            Status = status,
+            Value = new ExtensionDataDocumentsResponse(
+                envelope.Documents ?? [],
+                System.Text.Encoding.UTF8.GetString(json)),
+        };
+    }
 }
+
+public readonly record struct ExtensionDataDocumentResponse(ExtensionDataDocument Response, String Json);
+public readonly record struct ExtensionDataDocumentsResponse(List<ExtensionDataDocument> Documents, String Json);
 
 public record struct DeserializationResult<T>
 {
