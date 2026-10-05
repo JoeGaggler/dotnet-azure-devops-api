@@ -6,6 +6,19 @@ https://learn.microsoft.com/en-us/rest/api/azure/devops
 
 This section contains the list of APIs which this library supports.
 
+### Build
+
+#### Builds
+
+##### List Builds
+
+Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/build/builds/list?view=azure-devops-rest-7.2
+Endpoint:      GET https://dev.azure.com/{organization}/{project}/_apis/build/builds
+Version:       7.2-preview.8
+
+Request Method: ListBuildsRequest
+Response Model: Pingmint.AzureDevOps.BuildsResponse
+
 ### Git
 
 #### Refs

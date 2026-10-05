@@ -1,3 +1,117 @@
+// Build
+
+Pingmint.AzureDevOps.AgentPoolQueue
+- "_links" => Links : Pingmint.AzureDevOps.ReferenceLinks
+- "id" => Id : int
+- "name" => Name : string
+- "pool" => Pool : Pingmint.AzureDevOps.TaskAgentPoolReference
+- "url" => Url : string
+
+Pingmint.AzureDevOps.AgentSpecification
+- "identifier" => Identifier : string
+
+Pingmint.AzureDevOps.Build
+- "_links" => Links : Pingmint.AzureDevOps.ReferenceLinks
+- "agentSpecification" => AgentSpecification : Pingmint.AzureDevOps.AgentSpecification
+- "appendCommitMessageToRunName" => AppendCommitMessageToRunName : bool
+- "buildNumber" => BuildNumber : string
+- "buildNumberRevision" => BuildNumberRevision : int
+- "controller" => Controller : Pingmint.AzureDevOps.BuildController
+- "definition" => Definition : Pingmint.AzureDevOps.DefinitionReference
+- "deleted" => Deleted : bool
+- "deletedBy" => DeletedBy : Pingmint.AzureDevOps.IdentityRef
+- "deletedDate" => DeletedDate : string
+- "deletedReason" => DeletedReason : string
+- "demands" => Demands : [Pingmint.AzureDevOps.Demand]
+- "finishTime" => FinishTime : string
+- "id" => Id : int
+- "lastChangedBy" => LastChangedBy : Pingmint.AzureDevOps.IdentityRef
+- "lastChangedDate" => LastChangedDate : string
+- "logs" => Logs : Pingmint.AzureDevOps.BuildLogReference
+- "orchestrationPlan" => OrchestrationPlan : Pingmint.AzureDevOps.TaskOrchestrationPlanReference
+- "parameters" => Parameters : string
+- "plans" => Plans : [Pingmint.AzureDevOps.TaskOrchestrationPlanReference]
+- "priority" => Priority : string
+- "project" => Project : Pingmint.AzureDevOps.TeamProjectReference
+- "properties" => Properties : Pingmint.AzureDevOps.PropertiesCollection
+- "quality" => Quality : string
+- "queue" => Queue : Pingmint.AzureDevOps.AgentPoolQueue
+- "queueOptions" => QueueOptions : string
+- "queuePosition" => QueuePosition : int
+- "queueTime" => QueueTime : string
+- "reason" => Reason : string
+- "repository" => Repository : Pingmint.AzureDevOps.BuildRepository
+- "requestedBy" => RequestedBy : Pingmint.AzureDevOps.IdentityRef
+- "requestedFor" => RequestedFor : Pingmint.AzureDevOps.IdentityRef
+- "result" => Result : string
+- "retainedByRelease" => RetainedByRelease : bool
+- "sourceBranch" => SourceBranch : string
+- "sourceVersion" => SourceVersion : string
+- "startTime" => StartTime : string
+- "status" => Status : string
+- "tags" => Tags : [string]
+// The templateParameters value is a heterogeneous JSON object unsupported by the pinned generator.
+// - "templateParameters" => TemplateParameters : object
+// The triggerInfo value is a provider-specific heterogeneous JSON object unsupported by the pinned generator.
+// - "triggerInfo" => TriggerInfo : object
+- "triggeredByBuild" => TriggeredByBuild : Pingmint.AzureDevOps.Build
+- "uri" => Uri : string
+- "url" => Url : string
+- "validationResults" => ValidationResults : [Pingmint.AzureDevOps.BuildRequestValidationResult]
+
+Pingmint.AzureDevOps.BuildController
+- "_links" => Links : Pingmint.AzureDevOps.ReferenceLinks
+- "createdDate" => CreatedDate : string
+- "description" => Description : string
+- "enabled" => Enabled : bool
+- "id" => Id : int
+- "name" => Name : string
+- "status" => Status : string
+- "updatedDate" => UpdatedDate : string
+- "uri" => Uri : string
+- "url" => Url : string
+
+Pingmint.AzureDevOps.BuildLogReference
+- "id" => Id : int
+- "type" => Type : string
+- "url" => Url : string
+
+Pingmint.AzureDevOps.BuildRepository
+- "checkoutSubmodules" => CheckoutSubmodules : bool
+- "clean" => Clean : string
+- "defaultBranch" => DefaultBranch : string
+- "id" => Id : string
+- "name" => Name : string
+// The properties value is a heterogeneous JSON object unsupported by the pinned generator.
+// - "properties" => Properties : object
+- "rootFolder" => RootFolder : string
+- "type" => Type : string
+- "url" => Url : string
+
+Pingmint.AzureDevOps.BuildRequestValidationResult
+- "message" => Message : string
+- "result" => Result : string
+
+Pingmint.AzureDevOps.BuildsResponse
+- "value" => Value : [Pingmint.AzureDevOps.Build]
+- "count" => Count : int
+
+Pingmint.AzureDevOps.DefinitionReference
+- "createdDate" => CreatedDate : string
+- "id" => Id : int
+- "name" => Name : string
+- "path" => Path : string
+- "project" => Project : Pingmint.AzureDevOps.TeamProjectReference
+- "queueStatus" => QueueStatus : string
+- "revision" => Revision : int
+- "type" => Type : string
+- "uri" => Uri : string
+- "url" => Url : string
+
+Pingmint.AzureDevOps.Demand
+- "name" => Name : string
+- "value" => Value : string
+
 //
 // Git
 //
@@ -253,6 +367,15 @@ Pingmint.AzureDevOps.TeamProjectCollectionReference
 - "id" => Id : string
 - "name" => Name : string
 - "url" => Url : string
+
+Pingmint.AzureDevOps.TaskAgentPoolReference
+- "id" => Id : int
+- "isHosted" => IsHosted : bool
+- "name" => Name : string
+
+Pingmint.AzureDevOps.TaskOrchestrationPlanReference
+- "orchestrationType" => OrchestrationType : int
+- "planId" => PlanId : string
 
 Pingmint.AzureDevOps.TeamProjectReference
 - "abbreviation" => Abbreviation : string

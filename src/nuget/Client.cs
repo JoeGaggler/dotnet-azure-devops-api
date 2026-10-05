@@ -2,6 +2,19 @@ namespace Pingmint.AzureDevOps;
 
 public static class Client
 {
+    public static async Task<ClientResult<BuildsResponse>> ListBuildsAsync(
+        HttpClient client,
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        return await SendAndDeserializeAsync<BuildsResponse>(
+            client,
+            request,
+            System.Net.HttpStatusCode.OK,
+            static bytes => APISerializer.DeserializeBuildsResponse(bytes),
+            cancellationToken);
+    }
+
     public static async Task<ClientResult<GitRef>> UpdateGitRefAsync(
         HttpClient client,
         HttpRequestMessage request,

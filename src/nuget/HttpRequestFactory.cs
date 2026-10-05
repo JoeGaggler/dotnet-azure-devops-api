@@ -5,6 +5,116 @@ namespace Pingmint.AzureDevOps;
 public static class HttpRequestFactory
 {
     /// <summary>
+    /// Gets a list of builds.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="project">The project ID or project name.</param>
+    /// <param name="top">The optional maximum number of builds to return.</param>
+    /// <param name="branchName">The optional branch name to filter builds by.</param>
+    /// <param name="buildIds">The optional comma-delimited list of build IDs to retrieve.</param>
+    /// <param name="buildNumber">The optional build number filter. Append an asterisk for a prefix search.</param>
+    /// <param name="continuationToken">The optional token from a previous call used to retrieve the next set of builds.</param>
+    /// <param name="definitions">The optional comma-delimited list of definition IDs.</param>
+    /// <param name="deletedFilter">The optional filter for deleted builds.</param>
+    /// <param name="maxBuildsPerDefinition">The optional maximum number of builds to return per definition.</param>
+    /// <param name="maxTime">The optional upper time bound, interpreted according to <paramref name="queryOrder"/>.</param>
+    /// <param name="minTime">The optional lower time bound, interpreted according to <paramref name="queryOrder"/>.</param>
+    /// <param name="properties">The optional comma-delimited list of build properties to retrieve.</param>
+    /// <param name="queryOrder">The optional ordering used for builds and time filters.</param>
+    /// <param name="queues">The optional comma-delimited list of queue IDs.</param>
+    /// <param name="reasonFilter">The optional build reason filter.</param>
+    /// <param name="repositoryId">The optional repository ID filter.</param>
+    /// <param name="repositoryType">The optional repository type filter.</param>
+    /// <param name="requestedFor">The optional user to filter builds by.</param>
+    /// <param name="resultFilter">The optional build result filter.</param>
+    /// <param name="statusFilter">The optional build status filter.</param>
+    /// <param name="tagFilters">The optional comma-delimited list of build tags.</param>
+    /// <returns>An HTTP request message for the Builds - List operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.8.
+    /// See <see href="https://learn.microsoft.com/en-us/rest/api/azure/devops/build/builds/list?view=azure-devops-rest-7.2">the official Azure DevOps REST API documentation</see>.
+    /// </remarks>
+    public static HttpRequestMessage ListBuildsRequest(
+        string organization,
+        string project,
+        int? top = null,
+        string? branchName = null,
+        IEnumerable<int>? buildIds = null,
+        string? buildNumber = null,
+        string? continuationToken = null,
+        IEnumerable<int>? definitions = null,
+        string? deletedFilter = null,
+        int? maxBuildsPerDefinition = null,
+        DateTimeOffset? maxTime = null,
+        DateTimeOffset? minTime = null,
+        IEnumerable<string>? properties = null,
+        string? queryOrder = null,
+        IEnumerable<int>? queues = null,
+        string? reasonFilter = null,
+        string? repositoryId = null,
+        string? repositoryType = null,
+        string? requestedFor = null,
+        string? resultFilter = null,
+        string? statusFilter = null,
+        IEnumerable<string>? tagFilters = null)
+    {
+        var queryParameters = new List<string>();
+
+        void AddQueryParameter(string name, string value)
+        {
+            queryParameters.Add($"{name}={Uri.EscapeDataString(value)}");
+        }
+
+        if (top is not null)
+            AddQueryParameter("$top", top.Value.ToString(CultureInfo.InvariantCulture));
+        if (branchName is not null)
+            AddQueryParameter("branchName", branchName);
+        if (buildIds is not null)
+            AddQueryParameter("buildIds", string.Join(',', buildIds));
+        if (buildNumber is not null)
+            AddQueryParameter("buildNumber", buildNumber);
+        if (continuationToken is not null)
+            AddQueryParameter("continuationToken", continuationToken);
+        if (definitions is not null)
+            AddQueryParameter("definitions", string.Join(',', definitions));
+        if (deletedFilter is not null)
+            AddQueryParameter("deletedFilter", deletedFilter);
+        if (maxBuildsPerDefinition is not null)
+            AddQueryParameter("maxBuildsPerDefinition", maxBuildsPerDefinition.Value.ToString(CultureInfo.InvariantCulture));
+        if (maxTime is not null)
+            AddQueryParameter("maxTime", maxTime.Value.ToString("O", CultureInfo.InvariantCulture));
+        if (minTime is not null)
+            AddQueryParameter("minTime", minTime.Value.ToString("O", CultureInfo.InvariantCulture));
+        if (properties is not null)
+            AddQueryParameter("properties", string.Join(',', properties));
+        if (queryOrder is not null)
+            AddQueryParameter("queryOrder", queryOrder);
+        if (queues is not null)
+            AddQueryParameter("queues", string.Join(',', queues));
+        if (reasonFilter is not null)
+            AddQueryParameter("reasonFilter", reasonFilter);
+        if (repositoryId is not null)
+            AddQueryParameter("repositoryId", repositoryId);
+        if (repositoryType is not null)
+            AddQueryParameter("repositoryType", repositoryType);
+        if (requestedFor is not null)
+            AddQueryParameter("requestedFor", requestedFor);
+        if (resultFilter is not null)
+            AddQueryParameter("resultFilter", resultFilter);
+        if (statusFilter is not null)
+            AddQueryParameter("statusFilter", statusFilter);
+        if (tagFilters is not null)
+            AddQueryParameter("tagFilters", string.Join(',', tagFilters));
+
+        queryParameters.Add("api-version=7.2-preview.8");
+
+        var organizationSegment = Uri.EscapeDataString(organization);
+        var projectSegment = Uri.EscapeDataString(project);
+        var url = $"https://dev.azure.com/{organizationSegment}/{projectSegment}/_apis/build/builds?{string.Join('&', queryParameters)}";
+        return new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+    }
+
+    /// <summary>
     /// Queries the specified repository for its refs.
     /// </summary>
     /// <param name="organization">The name of the Azure DevOps organization.</param>

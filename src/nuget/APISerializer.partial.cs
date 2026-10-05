@@ -10,6 +10,52 @@ partial class APISerializer
         return System.Text.Encoding.UTF8.TryGetBytes(json.AsSpan(), bytes, out bytesWritten);
     }
 
+    public static DeserializationResult<BuildsResponse> DeserializeBuildsResponse(String json)
+    {
+        if (!TryGetUtf8ByteArrayFromString(json, out var bytes, out var bytesWritten))
+        {
+            return new DeserializationResult<BuildsResponse>
+            {
+                Status = DeserializationStatus.Failure,
+                Value = new BuildsResponse(),
+            };
+        }
+
+        return DeserializeBuildsResponse(bytes.AsSpan(0, bytesWritten));
+    }
+
+    public static DeserializationResult<BuildsResponse> DeserializeBuildsResponse(ReadOnlySpan<Byte> json)
+    {
+        var result = new BuildsResponse();
+        var status = DeserializationStatus.None;
+        var reader = new Utf8JsonReader(json);
+
+        try
+        {
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+            {
+                status = DeserializationStatus.Failure;
+            }
+            else
+            {
+                Deserialize(ref reader, result);
+                status = result.Value is null
+                    ? DeserializationStatus.ModelValidationFailure
+                    : DeserializationStatus.Success;
+            }
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        {
+            status = DeserializationStatus.Failure;
+        }
+
+        return new DeserializationResult<BuildsResponse>
+        {
+            Status = status,
+            Value = result,
+        };
+    }
+
     public static DeserializationResult<GitRef> DeserializeGitRef(String json)
     {
         if (!TryGetUtf8ByteArrayFromString(json, out var bytes, out var bytesWritten))

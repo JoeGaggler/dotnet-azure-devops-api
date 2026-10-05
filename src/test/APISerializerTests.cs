@@ -6,6 +6,88 @@ namespace Pingmint.AzureDevOps.Tests;
 public sealed class APISerializerTests
 {
     [TestMethod]
+    public void DeserializeBuildsResponseWithoutValueReturnsModelValidationFailure()
+    {
+        var result = APISerializer.DeserializeBuildsResponse("{}"u8);
+
+        Assert.AreEqual(DeserializationStatus.ModelValidationFailure, result.Status);
+    }
+
+    [TestMethod]
+    public void DeserializeBuildsResponseWithInvalidOrMalformedPayloadReturnsFailure()
+    {
+        var invalidRoot = APISerializer.DeserializeBuildsResponse("[]"u8);
+        var malformed = APISerializer.DeserializeBuildsResponse("{\"value\":"u8);
+
+        Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
+        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+    }
+
+    [TestMethod]
+    public void DeserializeBuildsResponseWithDocumentedFieldsReturnsSuccess()
+    {
+        var result = APISerializer.DeserializeBuildsResponse(
+            """{"count":1,"value":[{"id":17,"buildNumber":"2026.10.05.1","status":"completed","result":"succeeded","sourceBranch":"refs/heads/main","project":{"id":"project-id","name":"Project"},"definition":{"id":4,"name":"CI"},"repository":{"id":"repository-id","type":"TfsGit","url":"https://dev.azure.com/org/project/_git/repo"},"tags":["release"]}]}"""u8);
+
+        Assert.AreEqual(DeserializationStatus.Success, result.Status);
+        Assert.AreEqual(1, result.Value.Count);
+        var build = result.Value.Value![0];
+        Assert.AreEqual(17, build.Id);
+        Assert.AreEqual("2026.10.05.1", build.BuildNumber);
+        Assert.AreEqual("completed", build.Status);
+        Assert.AreEqual("succeeded", build.Result);
+        Assert.AreEqual("Project", build.Project!.Name);
+        Assert.AreEqual(4, build.Definition!.Id);
+        Assert.AreEqual("repository-id", build.Repository!.Id);
+        CollectionAssert.AreEqual(new[] { "release" }, build.Tags);
+    }
+
+    [TestMethod]
+    public void ListBuildsRequestIncludesDocumentedFiltersAndEscapesValues()
+    {
+        var maxTime = new DateTimeOffset(2026, 10, 5, 12, 30, 0, TimeSpan.Zero);
+        var minTime = new DateTimeOffset(2026, 10, 4, 12, 30, 0, TimeSpan.Zero);
+        using var request = HttpRequestFactory.ListBuildsRequest(
+            "org name",
+            "project name",
+            top: 25,
+            branchName: "refs/heads/feature & test",
+            buildIds: [10, 11],
+            buildNumber: "build 42",
+            continuationToken: "next +token",
+            definitions: [2, 3],
+            deletedFilter: "excludeDeleted",
+            maxBuildsPerDefinition: 4,
+            maxTime: maxTime,
+            minTime: minTime,
+            properties: ["buildOption", "requestedFor"],
+            queryOrder: "finishTimeDescending",
+            queues: [5, 6],
+            reasonFilter: "manual",
+            repositoryId: "repo/id",
+            repositoryType: "TfsGit",
+            requestedFor: "user@example.com",
+            resultFilter: "succeeded",
+            statusFilter: "completed",
+            tagFilters: ["tag one", "tag&two"]);
+
+        Assert.AreEqual(HttpMethod.Get, request.Method);
+        Assert.AreEqual(
+            "https://dev.azure.com/org%20name/project%20name/_apis/build/builds?$top=25&branchName=refs%2Fheads%2Ffeature%20%26%20test&buildIds=10%2C11&buildNumber=build%2042&continuationToken=next%20%2Btoken&definitions=2%2C3&deletedFilter=excludeDeleted&maxBuildsPerDefinition=4&maxTime=2026-10-05T12%3A30%3A00.0000000%2B00%3A00&minTime=2026-10-04T12%3A30%3A00.0000000%2B00%3A00&properties=buildOption%2CrequestedFor&queryOrder=finishTimeDescending&queues=5%2C6&reasonFilter=manual&repositoryId=repo%2Fid&repositoryType=TfsGit&requestedFor=user%40example.com&resultFilter=succeeded&statusFilter=completed&tagFilters=tag%20one%2Ctag%26two&api-version=7.2-preview.8",
+            request.RequestUri!.AbsoluteUri);
+    }
+
+    [TestMethod]
+    public void ListBuildsRequestOmitsUnsetOptionalFilters()
+    {
+        using var request = HttpRequestFactory.ListBuildsRequest("organization", "project");
+
+        Assert.AreEqual(
+            "https://dev.azure.com/organization/project/_apis/build/builds?api-version=7.2-preview.8",
+            request.RequestUri!.AbsoluteUri);
+    }
+
+    [TestMethod]
     public void DeserializeGitRepositoriesResponseWithoutValueReturnsModelValidationFailure()
     {
         var result = APISerializer.DeserializeGitRepositoriesResponse("{}"u8);
