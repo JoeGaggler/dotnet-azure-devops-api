@@ -203,6 +203,8 @@ Add the operation to `doc/azure-devops-rest-api.md` under the correct service/re
 - request method
 - response model
 
+Catalog each operation separately. An existing entry for a sibling operation under the same resource heading does not satisfy this requirement. Before considering an operation current, verify that a distinct catalog entry matches its documentation URL, HTTP method and route, API version, request method, and response model. In endpoint mode, add the entry if no exact operation entry exists.
+
 Use the selected operation URL, not a nearby Microsoft Learn page. In catalog refresh mode, update every catalog entry's documentation URL and `Version` to the values verified from its latest-release page, even when no code changes are required.
 
 ### 8. Add Focused Coverage

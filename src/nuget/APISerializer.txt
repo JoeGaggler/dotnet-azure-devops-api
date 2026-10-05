@@ -233,6 +233,8 @@ Pingmint.AzureDevOps.IdentityRef
 
 Pingmint.AzureDevOps.PropertiesCollection
 - "count" => Count : int
+// The item value is heterogeneous JSON and is not supported by the pinned serializer generator yet.
+// - "item" => Item : object
 - "keys" => Keys : [string]
 - "values" => Values : [string]
 

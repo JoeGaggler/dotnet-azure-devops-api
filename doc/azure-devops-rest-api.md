@@ -79,6 +79,15 @@ Version:       7.2-preview.2
 Request Method: GetPullRequestStatusesRequest
 Response Model: Pingmint.AzureDevOps.GitPullRequestStatusesResponse
 
+##### Create Pull Request Status
+
+Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-request-statuses/create?view=azure-devops-rest-7.2&tabs=HTTP
+Endpoint:      POST https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryId}/pullRequests/{pullRequestId}/statuses
+Version:       7.2-preview.2
+
+Request Method: CreatePullRequestStatusRequest
+Response Model: Pingmint.AzureDevOps.GitPullRequestStatus
+
 #### Merges
 
 ##### Get

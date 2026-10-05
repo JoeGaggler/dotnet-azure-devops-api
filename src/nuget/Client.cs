@@ -93,6 +93,19 @@ public static class Client
             cancellationToken);
     }
 
+    public static async Task<ClientResult<GitPullRequestStatus>> CreateGitPullRequestStatusAsync(
+        HttpClient client,
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        return await SendAndDeserializeAsync<GitPullRequestStatus>(
+            client,
+            request,
+            System.Net.HttpStatusCode.OK,
+            static bytes => APISerializer.DeserializeGitPullRequestStatus(bytes),
+            cancellationToken);
+    }
+
     public static async Task<ClientResult<GitMerge>> GetGitMergeAsync(
         HttpClient client,
         HttpRequestMessage request,

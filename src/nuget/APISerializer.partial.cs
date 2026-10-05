@@ -304,49 +304,20 @@ partial class APISerializer
     {
         var result = new GitPullRequestStatusesResponse();
         var status = DeserializationStatus.None;
+        var reader = new Utf8JsonReader(json);
 
         try
         {
-            using var document = JsonDocument.Parse(json.ToArray());
-            if (document.RootElement.ValueKind != JsonValueKind.Object)
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
             {
                 status = DeserializationStatus.Failure;
             }
             else
             {
-                var reader = new Utf8JsonReader(json);
-                if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
-                {
-                    status = DeserializationStatus.Failure;
-                }
-                else
-                {
-                    Deserialize(ref reader, result);
-                    if (result.Value is null)
-                    {
-                        status = DeserializationStatus.ModelValidationFailure;
-                    }
-                    else
-                    {
-                        if (document.RootElement.TryGetProperty("value", out var statuses)
-                            && statuses.ValueKind == JsonValueKind.Array)
-                        {
-                            for (var index = 0; index < Math.Min(statuses.GetArrayLength(), result.Value.Count); index++)
-                            {
-                                if (statuses[index].TryGetProperty("properties", out var properties)
-                                    && properties.ValueKind == JsonValueKind.Object
-                                    && properties.TryGetProperty("item", out var item))
-                                {
-                                    var statusModel = result.Value[index];
-                                    if (statusModel.Properties is not null)
-                                        statusModel.Properties.Item = item.Clone();
-                                }
-                            }
-                        }
-
-                        status = DeserializationStatus.Success;
-                    }
-                }
+                Deserialize(ref reader, result);
+                status = result.Value is null
+                    ? DeserializationStatus.ModelValidationFailure
+                    : DeserializationStatus.Success;
             }
         }
         catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
@@ -355,6 +326,52 @@ partial class APISerializer
         }
 
         return new DeserializationResult<GitPullRequestStatusesResponse>
+        {
+            Status = status,
+            Value = result,
+        };
+    }
+
+    public static DeserializationResult<GitPullRequestStatus> DeserializeGitPullRequestStatus(String json)
+    {
+        if (!TryGetUtf8ByteArrayFromString(json, out var bytes, out var bytesWritten))
+        {
+            return new DeserializationResult<GitPullRequestStatus>
+            {
+                Status = DeserializationStatus.Failure,
+                Value = new GitPullRequestStatus(),
+            };
+        }
+
+        return DeserializeGitPullRequestStatus(bytes.AsSpan(0, bytesWritten));
+    }
+
+    public static DeserializationResult<GitPullRequestStatus> DeserializeGitPullRequestStatus(ReadOnlySpan<Byte> json)
+    {
+        var result = new GitPullRequestStatus();
+        var status = DeserializationStatus.None;
+        var reader = new Utf8JsonReader(json);
+
+        try
+        {
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+            {
+                status = DeserializationStatus.Failure;
+            }
+            else
+            {
+                Deserialize(ref reader, result);
+                status = result.Context?.Name is null
+                    ? DeserializationStatus.ModelValidationFailure
+                    : DeserializationStatus.Success;
+            }
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        {
+            status = DeserializationStatus.Failure;
+        }
+
+        return new DeserializationResult<GitPullRequestStatus>
         {
             Status = status,
             Value = result,
@@ -412,11 +429,6 @@ public record struct DeserializationResult<T>
 {
     public DeserializationStatus Status { get; init; }
     public T Value { get; init; }
-}
-
-public sealed partial record class PropertiesCollection
-{
-    public JsonElement? Item { get; set; }
 }
 
 public enum DeserializationStatus

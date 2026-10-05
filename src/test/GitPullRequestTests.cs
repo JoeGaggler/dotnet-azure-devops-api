@@ -1,4 +1,6 @@
-﻿namespace Pingmint.AzureDevOps.Tests;
+﻿using System.Text.Json;
+
+namespace Pingmint.AzureDevOps.Tests;
 
 [TestClass]
 public sealed class GitPullRequestTests : AzureDevOpsIntegrationTestBase
@@ -102,6 +104,42 @@ public sealed class GitPullRequestTests : AzureDevOpsIntegrationTestBase
             if (status.Properties?.Keys is not null)
                 Assert.HasCount(status.Properties.Count!.Value, status.Properties.Keys);
         }
+    }
+
+    [TestMethod]
+    [TestCategory("Integration")]
+    public async Task CreatePullRequestStatusAsync()
+    {
+        using var request = HttpRequestFactory.CreatePullRequestStatusRequest(
+            Organization,
+            "repository-id",
+            1,
+            new GitPullRequestStatus
+            {
+                Context = new GitStatusContext { Name = "local-status-check" },
+                State = "succeeded",
+                Description = "Local request validation",
+            },
+            Project);
+
+        Assert.AreEqual(HttpMethod.Post, request.Method);
+        Assert.AreEqual(
+            $"https://dev.azure.com/{Uri.EscapeDataString(Organization)}/{Uri.EscapeDataString(Project)}/_apis/git/repositories/repository-id/pullRequests/1/statuses?api-version=7.2-preview.2",
+            request.RequestUri!.AbsoluteUri);
+
+        using var requestBody = await request.Content!.ReadAsStreamAsync(TestContext.CancellationToken);
+        using var document = await JsonDocument.ParseAsync(requestBody, cancellationToken: TestContext.CancellationToken);
+        Assert.AreEqual(
+            "local-status-check",
+            document.RootElement.GetProperty("context").GetProperty("name").GetString());
+
+        var response = APISerializer.DeserializeGitPullRequestStatus(
+            """{"id":3,"state":"succeeded","context":{"name":"local-status-check"}}"""u8);
+        Assert.AreEqual(DeserializationStatus.Success, response.Status);
+        Assert.AreEqual(3, response.Value.Id);
+        Assert.AreEqual("local-status-check", response.Value.Context!.Name);
+
+        Assert.Inconclusive("Create Pull Request Status changes Azure DevOps resources; the POST request is not sent.");
     }
 
     private static void AssertPullRequestModel(GitPullRequest pullRequest)

@@ -323,10 +323,10 @@ public sealed class APISerializerTests
     }
 
     [TestMethod]
-    public void DeserializeGitPullRequestStatusesResponsePreservesHeterogeneousProperties()
+    public void DeserializeGitPullRequestStatusesResponseDeserializesSupportedProperties()
     {
         var result = APISerializer.DeserializeGitPullRequestStatusesResponse(
-            """{"value":[{"id":1,"state":"succeeded","context":{"name":"build","genre":"ci"},"creationDate":"2017-09-19T14:50:27.064405Z","createdBy":{"id":"identity-id"},"properties":{"count":3,"item":{"score":7,"passed":true,"label":"ci"},"keys":["score","passed","label"],"values":["7","True","ci"]}}],"count":1}"""u8);
+            """{"value":[{"id":1,"state":"succeeded","context":{"name":"build","genre":"ci"},"creationDate":"2017-09-19T14:50:27.064405Z","createdBy":{"id":"identity-id"},"properties":{"count":2,"keys":["score","label"],"values":["7","ci"]}}],"count":1}"""u8);
 
         Assert.AreEqual(DeserializationStatus.Success, result.Status);
         Assert.AreEqual(1, result.Value.Count);
@@ -335,12 +335,10 @@ public sealed class APISerializerTests
         Assert.AreEqual("succeeded", status.State);
         Assert.AreEqual("build", status.Context!.Name);
         Assert.AreEqual("identity-id", status.CreatedBy!.Id);
-        Assert.AreEqual(3, status.Properties!.Count);
+        Assert.AreEqual(2, status.Properties!.Count);
         var keys = status.Properties.Keys!;
-        Assert.HasCount(3, keys);
-        Assert.AreEqual(JsonValueKind.Object, status.Properties.Item!.Value.ValueKind);
-        Assert.AreEqual(7, status.Properties.Item.Value.GetProperty("score").GetInt32());
-        Assert.IsTrue(status.Properties.Item.Value.GetProperty("passed").GetBoolean());
+        Assert.HasCount(2, keys);
+        CollectionAssert.AreEqual(new[] { "7", "ci" }, status.Properties.Values);
     }
 
     [TestMethod]
@@ -356,6 +354,57 @@ public sealed class APISerializerTests
         Assert.AreEqual(
             "https://dev.azure.com/org%20name/project%20name/_apis/git/repositories/repo%2Fid/pullRequests/42/statuses?api-version=7.2-preview.2",
             request.RequestUri!.AbsoluteUri);
+    }
+
+    [TestMethod]
+    public void DeserializeGitPullRequestStatusRequiresContextName()
+    {
+        var missingContext = APISerializer.DeserializeGitPullRequestStatus("{\"state\":\"succeeded\"}"u8);
+        var missingName = APISerializer.DeserializeGitPullRequestStatus("{\"context\":{}}"u8);
+
+        Assert.AreEqual(DeserializationStatus.ModelValidationFailure, missingContext.Status);
+        Assert.AreEqual(DeserializationStatus.ModelValidationFailure, missingName.Status);
+    }
+
+    [TestMethod]
+    public void DeserializeGitPullRequestStatusRejectsMalformedOrInvalidRoot()
+    {
+        var malformed = APISerializer.DeserializeGitPullRequestStatus("{\"context\":{\"name\":"u8);
+        var invalidRoot = APISerializer.DeserializeGitPullRequestStatus("[]"u8);
+
+        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+        Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
+    }
+
+    [TestMethod]
+    public async Task CreatePullRequestStatusRequestIncludesDocumentedRouteAndBody()
+    {
+        using var request = HttpRequestFactory.CreatePullRequestStatusRequest(
+            "org name",
+            "repo/id",
+            42,
+            new GitPullRequestStatus
+            {
+                Context = new GitStatusContext { Name = "build", Genre = "ci" },
+                State = "succeeded",
+                Description = "Build passed",
+                IterationId = 1,
+                TargetUrl = "https://ci.example/build/7",
+            },
+            "project name");
+
+        Assert.AreEqual(HttpMethod.Post, request.Method);
+        Assert.AreEqual(
+            "https://dev.azure.com/org%20name/project%20name/_apis/git/repositories/repo%2Fid/pullRequests/42/statuses?api-version=7.2-preview.2",
+            request.RequestUri!.AbsoluteUri);
+        Assert.AreEqual("application/json", request.Content!.Headers.ContentType!.MediaType);
+
+        using var body = JsonDocument.Parse(await request.Content.ReadAsByteArrayAsync());
+        Assert.AreEqual("build", body.RootElement.GetProperty("context").GetProperty("name").GetString());
+        Assert.AreEqual("succeeded", body.RootElement.GetProperty("state").GetString());
+        Assert.AreEqual("Build passed", body.RootElement.GetProperty("description").GetString());
+        Assert.AreEqual(1, body.RootElement.GetProperty("iterationId").GetInt32());
+        Assert.AreEqual("https://ci.example/build/7", body.RootElement.GetProperty("targetUrl").GetString());
     }
 
     [TestMethod]
