@@ -8,6 +8,17 @@ This section contains the list of APIs which this library supports.
 
 ### Git
 
+#### Refs
+
+##### List Refs
+
+Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/git/refs/list?view=azure-devops-rest-7.2&tabs=HTTP
+Endpoint:      GET https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryId}/refs
+Version:       7.2-preview.2
+
+Request Method: ListRefsRequest
+Response Model: Pingmint.AzureDevOps.GitRefsResponse
+
 #### Repositories
 
 ##### Get Repository

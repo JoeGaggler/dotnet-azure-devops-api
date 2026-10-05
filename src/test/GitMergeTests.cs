@@ -26,8 +26,15 @@ public sealed class GitMergeTests : AzureDevOpsIntegrationTestBase
         var deserializationResult = APISerializer.DeserializeGitMerge(payload);
         Assert.AreEqual(DeserializationStatus.Success, deserializationResult.Status);
 
-        using var document = JsonDocument.Parse(payload);
-        GitPullRequestTests.AssertDeserializedValue(document.RootElement, deserializationResult.Value, "merge");
+        Assert.AreEqual(1, deserializationResult.Value.MergeOperationId);
+        Assert.AreEqual("completed", deserializationResult.Value.Status);
+        Assert.IsNotNull(deserializationResult.Value.DetailedStatus);
+        Assert.AreEqual(
+            "7e7460f6b61bbaa7cc2b52e4c33c0fb44d65ef9a",
+            deserializationResult.Value.DetailedStatus.MergeCommitId);
+        CollectionAssert.AreEqual(
+            new[] { "source", "target" },
+            deserializationResult.Value.Parents);
 
         Assert.Inconclusive(
             "A merge operation ID cannot be obtained through the available read-only APIs; the create operation is not invoked to obtain test data.");

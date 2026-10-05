@@ -5,6 +5,79 @@ namespace Pingmint.AzureDevOps;
 public static class HttpRequestFactory
 {
     /// <summary>
+    /// Queries the specified repository for its refs.
+    /// </summary>
+    /// <param name="organization">The name of the Azure DevOps organization.</param>
+    /// <param name="repositoryId">The name or ID of the repository.</param>
+    /// <param name="project">The project ID or project name. This parameter is optional.</param>
+    /// <param name="top">The optional maximum number of refs to return. It cannot be greater than 1000; when omitted with a continuation token, it defaults to 100.</param>
+    /// <param name="continuationToken">The optional continuation token used for pagination.</param>
+    /// <param name="filter">The optional filter to apply to refs by prefix.</param>
+    /// <param name="filterContains">The optional filter to apply to refs by substring.</param>
+    /// <param name="includeLinks">Whether to include reference links. This parameter is optional and defaults to <see langword="false"/>.</param>
+    /// <param name="includeMyBranches">Whether to include only branches owned or favorited by the user and the default branch. This parameter is optional, defaults to <see langword="false"/>, and cannot be combined with <paramref name="filter"/>.</param>
+    /// <param name="includeStatuses">Whether to include up to the first 1000 commit statuses for each ref. This parameter is optional and defaults to <see langword="false"/>.</param>
+    /// <param name="includeTargetBranches">Whether to include target branches defined by pull_request_targets.yml. This parameter is optional.</param>
+    /// <param name="latestStatusesOnly">Whether to include only the tip commit status for each ref. This parameter is optional, requires <paramref name="includeStatuses"/>, and defaults to <see langword="false"/>.</param>
+    /// <param name="peelTags">Whether to populate PeeledObjectId for annotated tags. This parameter is optional and defaults to <see langword="false"/>.</param>
+    /// <returns>An HTTP request message for the List Refs operation.</returns>
+    /// <remarks>
+    /// Uses Azure DevOps REST API version 7.2-preview.2.
+    /// See <see href="https://learn.microsoft.com/en-us/rest/api/azure/devops/git/refs/list?view=azure-devops-rest-7.2&amp;tabs=HTTP">the official Azure DevOps REST API documentation</see>.
+    /// </remarks>
+    public static HttpRequestMessage ListRefsRequest(
+        string organization,
+        string repositoryId,
+        string? project = null,
+        int? top = null,
+        string? continuationToken = null,
+        string? filter = null,
+        string? filterContains = null,
+        bool? includeLinks = null,
+        bool? includeMyBranches = null,
+        bool? includeStatuses = null,
+        bool? includeTargetBranches = null,
+        bool? latestStatusesOnly = null,
+        bool? peelTags = null)
+    {
+        var queryParameters = new List<string>();
+
+        void AddQueryParameter(string name, string value)
+        {
+            queryParameters.Add($"{name}={Uri.EscapeDataString(value)}");
+        }
+
+        if (filter is not null)
+            AddQueryParameter("filter", filter);
+        if (includeLinks is not null)
+            AddQueryParameter("includeLinks", includeLinks.Value ? "true" : "false");
+        if (includeStatuses is not null)
+            AddQueryParameter("includeStatuses", includeStatuses.Value ? "true" : "false");
+        if (includeMyBranches is not null)
+            AddQueryParameter("includeMyBranches", includeMyBranches.Value ? "true" : "false");
+        if (latestStatusesOnly is not null)
+            AddQueryParameter("latestStatusesOnly", latestStatusesOnly.Value ? "true" : "false");
+        if (peelTags is not null)
+            AddQueryParameter("peelTags", peelTags.Value ? "true" : "false");
+        if (filterContains is not null)
+            AddQueryParameter("filterContains", filterContains);
+        if (top is not null)
+            AddQueryParameter("$top", top.Value.ToString(CultureInfo.InvariantCulture));
+        if (continuationToken is not null)
+            AddQueryParameter("continuationToken", continuationToken);
+        if (includeTargetBranches is not null)
+            AddQueryParameter("includeTargetBranches", includeTargetBranches.Value ? "true" : "false");
+
+        queryParameters.Add("api-version=7.2-preview.2");
+
+        var organizationSegment = Uri.EscapeDataString(organization);
+        var projectSegment = project is null ? null : $"/{Uri.EscapeDataString(project)}";
+        var repositorySegment = Uri.EscapeDataString(repositoryId);
+        var url = $"https://dev.azure.com/{organizationSegment}{projectSegment}/_apis/git/repositories/{repositorySegment}/refs?{string.Join('&', queryParameters)}";
+        return new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+    }
+
+    /// <summary>
     /// Retrieves Git repositories.
     /// </summary>
     /// <param name="organization">The name of the Azure DevOps organization.</param>

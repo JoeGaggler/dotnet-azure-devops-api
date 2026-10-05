@@ -20,6 +20,21 @@ Pingmint.AzureDevOps.GitForkRef
 - "repository" => Repository : Pingmint.AzureDevOps.GitRepository
 - "url" => Url : string
 
+Pingmint.AzureDevOps.GitRef
+- "_links" => Links : Pingmint.AzureDevOps.ReferenceLinks
+- "creator" => Creator : Pingmint.AzureDevOps.IdentityRef
+- "isLocked" => IsLocked : bool
+- "isLockedBy" => IsLockedBy : Pingmint.AzureDevOps.IdentityRef
+- "name" => Name : string
+- "objectId" => ObjectId : string
+- "peeledObjectId" => PeeledObjectId : string
+- "statuses" => Statuses : [Pingmint.AzureDevOps.GitStatus]
+- "url" => Url : string
+
+Pingmint.AzureDevOps.GitRefsResponse
+- "value" => Value : [Pingmint.AzureDevOps.GitRef]
+- "count" => Count : int
+
 Pingmint.AzureDevOps.GitRepositoriesResponse
 - "count" => Count : int
 - "value" => Value : [Pingmint.AzureDevOps.GitRepository]
@@ -51,6 +66,21 @@ Pingmint.AzureDevOps.GitRepositoryRef
 - "remoteUrl" => RemoteUrl : string
 - "sshUrl" => SshUrl : string
 - "url" => Url : string
+
+Pingmint.AzureDevOps.GitStatus
+- "_links" => Links : Pingmint.AzureDevOps.ReferenceLinks
+- "context" => Context : Pingmint.AzureDevOps.GitStatusContext
+- "createdBy" => CreatedBy : Pingmint.AzureDevOps.IdentityRef
+- "creationDate" => CreationDate : string
+- "description" => Description : string
+- "id" => Id : int
+- "state" => State : string
+- "targetUrl" => TargetUrl : string
+- "updatedDate" => UpdatedDate : string
+
+Pingmint.AzureDevOps.GitStatusContext
+- "genre" => Genre : string
+- "name" => Name : string
 
 Pingmint.AzureDevOps.GitUserDate
 - "date" => Date : string
