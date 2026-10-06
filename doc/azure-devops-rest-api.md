@@ -80,7 +80,7 @@ Version:        7.2-preview.1
 Request Method: GetExtensionDataDocumentsRequest
 Response Model: Pingmint.AzureDevOps.ExtensionDataDocumentsResponse
 
-The generated `ExtensionDataDocumentsEnvelope` model deserializes the array. `ExtensionDataDocumentsResponse.Documents` exposes the typed documents and their `__etag` values, while `Json` retains the original array payload.
+The generated `ExtensionDataDocumentsEnvelope` deserializer handles the array through its `Documents` property. `ExtensionDataDocumentsResponse.Documents` exposes the typed documents and their `__etag` values, while `Json` retains the original array payload.
 
 ### Build
 

@@ -630,27 +630,22 @@ partial class APISerializer
 
     public static DeserializationResult<ExtensionDataDocumentsResponse> DeserializeExtensionDataDocuments(ReadOnlySpan<Byte> json)
     {
-        var envelope = new ExtensionDataDocumentsEnvelope();
+        var documents = new List<ExtensionDataDocument>();
         var status = DeserializationStatus.None;
 
         try
         {
-            ReadOnlySpan<Byte> prefix = "{\"documents\":"u8;
-            ReadOnlySpan<Byte> suffix = "}"u8;
-            var wrappedJson = new Byte[prefix.Length + json.Length + suffix.Length];
-            prefix.CopyTo(wrappedJson);
-            json.CopyTo(wrappedJson.AsSpan(prefix.Length));
-            suffix.CopyTo(wrappedJson.AsSpan(prefix.Length + json.Length));
-
-            var reader = new Utf8JsonReader(wrappedJson);
-            if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+            var reader = new Utf8JsonReader(json);
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray)
             {
                 status = DeserializationStatus.Failure;
             }
             else
             {
-                Deserialize(ref reader, envelope);
-                status = envelope.Documents is null || envelope.Documents.Any(document => document.Id is null || document.ETag is null)
+                Deserialize(ref reader, documents);
+                status = reader.Read()
+                    ? DeserializationStatus.Failure
+                    : documents.Any(document => document.Id is null || document.ETag is null)
                     ? DeserializationStatus.ModelValidationFailure
                     : DeserializationStatus.Success;
             }
@@ -664,7 +659,7 @@ partial class APISerializer
         {
             Status = status,
             Value = new ExtensionDataDocumentsResponse(
-                envelope.Documents ?? [],
+                documents,
                 System.Text.Encoding.UTF8.GetString(json)),
         };
     }

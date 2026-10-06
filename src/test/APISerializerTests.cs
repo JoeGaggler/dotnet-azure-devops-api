@@ -139,13 +139,6 @@ public sealed class APISerializerTests
     [TestMethod]
     public void DeserializeExtensionDataDocumentsPreservesEachDocumentAndEtag()
     {
-        var envelopeJson = """{"documents":[{"id":"one","__etag":2},{"id":"two","__etag":-1}]}"""u8;
-        var envelopeReader = new Utf8JsonReader(envelopeJson);
-        Assert.IsTrue(envelopeReader.Read());
-        var envelope = new ExtensionDataDocumentsEnvelope();
-        APISerializer.Deserialize(ref envelopeReader, envelope);
-        Assert.HasCount(2, envelope.Documents!);
-
         var result = APISerializer.DeserializeExtensionDataDocuments(
             """[{"id":"one","__etag":2,"value":1},{"id":"two","__etag":-1,"value":{"ok":true}}]"""u8);
         using var documentsJson = JsonDocument.Parse(result.Value.Json);
