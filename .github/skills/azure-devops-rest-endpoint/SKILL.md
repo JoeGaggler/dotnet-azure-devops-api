@@ -58,7 +58,7 @@ Inspect the current versions of these files before editing:
 - `src/nuget/APISerializer.txt`
 - `src/nuget/APISerializer.partial.cs`
 - `src/nuget/Client.cs`
-- `src/nuget/HttpRequestFactory.cs`
+- `src/nuget/Requests.cs`
 - `doc/azure-devops-rest-api.md`
 - the closest test under `src/test/`
 - `.vscode/tasks.json`
@@ -125,7 +125,7 @@ Inspect the generated response model names and property types before writing wra
 
 ### 4. Add the Request Factory Method
 
-Add a public static method to `src/nuget/HttpRequestFactory.cs` that:
+Add a public static method to `src/nuget/Requests.cs` that:
 
 - uses the documented HTTP method
 - accepts every required route parameter
@@ -215,7 +215,7 @@ For read-only operations, add or extend an integration test under `src/test/` th
 
 - derives from `AzureDevOpsIntegrationTestBase`
 - has `[TestCategory("Integration")]`
-- creates the request through `HttpRequestFactory`
+	- creates the request through `Requests`
 - applies authorization through `AddAuthorizationForAzureDevOps`
 - executes the request through the operation's public `Client` method using `TestContext.CancellationToken`
 - asserts `ClientStatus.Success`

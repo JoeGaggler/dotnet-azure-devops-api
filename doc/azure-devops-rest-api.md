@@ -144,7 +144,7 @@ Response Model: Pingmint.AzureDevOps.GitRefUpdateResultsResponse
 ##### Get Repository
 
 Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/git/repositories/get-repository?view=azure-devops-rest-7.2&tabs=HTTP
-Endpoint:      https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryId}
+Endpoint:      GET https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryId}
 Version:       7.2-preview.2
 
 Request Method: GetRepositoryRequest
@@ -153,7 +153,7 @@ Response Model: Pingmint.AzureDevOps.GitRepository
 ##### List Repositories
 
 Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/git/repositories/list?view=azure-devops-rest-7.2&tabs=HTTP
-Endpoint:      https://dev.azure.com/{organization}/{project}/_apis/git/repositories
+Endpoint:      GET https://dev.azure.com/{organization}/{project}/_apis/git/repositories
 Version:       7.2-preview.2
 
 Request Method: ListRepositoriesRequest
@@ -164,7 +164,7 @@ Response Model: Pingmint.AzureDevOps.GitRepositoriesResponse
 ##### Get Pull Request By Id
 
 Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-requests/get-pull-request-by-id?view=azure-devops-rest-7.2&tabs=HTTP
-Endpoint:      https://dev.azure.com/{organization}/{project}/_apis/git/pullrequests/{pullRequestId}
+Endpoint:      GET https://dev.azure.com/{organization}/{project}/_apis/git/pullrequests/{pullRequestId}
 Version:       7.2-preview.2
 
 Request Method: GetPullRequestByIdRequest
@@ -173,7 +173,7 @@ Response Model: Pingmint.AzureDevOps.GitPullRequest
 ##### Get Pull Requests By Project
 
 Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-requests/get-pull-requests-by-project?view=azure-devops-rest-7.2&tabs=HTTP
-Endpoint:      https://dev.azure.com/{organization}/{project}/_apis/git/pullrequests
+Endpoint:      GET https://dev.azure.com/{organization}/{project}/_apis/git/pullrequests
 Version:       7.2-preview.2
 
 Request Method: GetPullRequestsByProjectRequest
@@ -213,7 +213,7 @@ Response Model: None
 ##### Get
 
 Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/git/merges/get?view=azure-devops-rest-7.2&tabs=HTTP
-Endpoint:      https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryNameOrId}/merges/{mergeOperationId}
+Endpoint:      GET https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryNameOrId}/merges/{mergeOperationId}
 Version:       7.2-preview.1
 
 Request Method: GetMergeRequest
@@ -222,7 +222,7 @@ Response Model: Pingmint.AzureDevOps.GitMerge
 ##### Create
 
 Documentation: https://learn.microsoft.com/en-us/rest/api/azure/devops/git/merges/create?view=azure-devops-rest-7.2&tabs=HTTP
-Endpoint:      https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryNameOrId}/merges
+Endpoint:      POST https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryNameOrId}/merges
 Version:       7.2-preview.1
 
 Request Method: CreateMergeRequest

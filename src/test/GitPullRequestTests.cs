@@ -10,7 +10,7 @@ public sealed class GitPullRequestTests : AzureDevOpsIntegrationTestBase
     public async Task FetchPullRequestByIdAsync()
     {
         using var client = new HttpClient();
-        using var listRequest = HttpRequestFactory.GetPullRequestsByProjectRequest(Organization, Project);
+        using var listRequest = Requests.GetPullRequestsByProjectRequest(Organization, Project);
         AddAuthorizationForAzureDevOps(listRequest);
 
         var listResult = await Client.ListGitPullRequestsAsync(client, listRequest, TestContext.CancellationToken);
@@ -26,7 +26,7 @@ public sealed class GitPullRequestTests : AzureDevOpsIntegrationTestBase
             return;
         }
 
-        using var request = HttpRequestFactory.GetPullRequestByIdRequest(Organization, pullRequestId.Value, Project);
+        using var request = Requests.GetPullRequestByIdRequest(Organization, pullRequestId.Value, Project);
         AddAuthorizationForAzureDevOps(request);
 
         var response = await Client.GetGitPullRequestAsync(client, request, TestContext.CancellationToken);
@@ -39,7 +39,7 @@ public sealed class GitPullRequestTests : AzureDevOpsIntegrationTestBase
     [TestCategory("Integration")]
     public async Task FetchPullRequestsForProjectAsync()
     {
-        using var request = HttpRequestFactory.GetPullRequestsByProjectRequest(Organization, Project, top: 2);
+        using var request = Requests.GetPullRequestsByProjectRequest(Organization, Project, top: 2);
         AddAuthorizationForAzureDevOps(request);
 
         using var client = new HttpClient();
@@ -60,7 +60,7 @@ public sealed class GitPullRequestTests : AzureDevOpsIntegrationTestBase
     public async Task FetchPullRequestStatusesAsync()
     {
         using var client = new HttpClient();
-        using var listRequest = HttpRequestFactory.GetPullRequestsByProjectRequest(Organization, Project);
+        using var listRequest = Requests.GetPullRequestsByProjectRequest(Organization, Project);
         AddAuthorizationForAzureDevOps(listRequest);
 
         var pullRequests = await Client.ListGitPullRequestsAsync(client, listRequest, TestContext.CancellationToken);
@@ -75,7 +75,7 @@ public sealed class GitPullRequestTests : AzureDevOpsIntegrationTestBase
             return;
         }
 
-        using var request = HttpRequestFactory.GetPullRequestStatusesRequest(
+        using var request = Requests.GetPullRequestStatusesRequest(
             Organization,
             pullRequest.Repository!.Id!,
             pullRequest.PullRequestId!.Value,
@@ -110,7 +110,7 @@ public sealed class GitPullRequestTests : AzureDevOpsIntegrationTestBase
     [TestCategory("Integration")]
     public async Task CreatePullRequestStatusAsync()
     {
-        using var request = HttpRequestFactory.CreatePullRequestStatusRequest(
+        using var request = Requests.CreatePullRequestStatusRequest(
             Organization,
             "repository-id",
             1,
@@ -146,7 +146,7 @@ public sealed class GitPullRequestTests : AzureDevOpsIntegrationTestBase
     [TestCategory("Integration")]
     public void DeletePullRequestStatusAsync()
     {
-        using var request = HttpRequestFactory.DeletePullRequestStatusRequest(
+        using var request = Requests.DeletePullRequestStatusRequest(
             Organization,
             "repository-id",
             1,

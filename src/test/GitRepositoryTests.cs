@@ -9,7 +9,7 @@ public sealed class GitRepositoryTests : AzureDevOpsIntegrationTestBase
     [TestCategory("Integration")]
     public async Task FetchRepositoriesAsync()
     {
-        using var request = HttpRequestFactory.ListRepositoriesRequest(
+        using var request = Requests.ListRepositoriesRequest(
             Organization,
             Project,
             includeAllUrls: true,
@@ -69,7 +69,7 @@ public sealed class GitRepositoryTests : AzureDevOpsIntegrationTestBase
     public async Task FetchRepositoryAsync()
     {
         using var client = new HttpClient();
-        using var listRequest = HttpRequestFactory.ListRepositoriesRequest(Organization, Project);
+        using var listRequest = Requests.ListRepositoriesRequest(Organization, Project);
         AddAuthorizationForAzureDevOps(listRequest);
 
         var listResponse = await Client.ListGitRepositoriesAsync(client, listRequest, TestContext.CancellationToken);
@@ -85,7 +85,7 @@ public sealed class GitRepositoryTests : AzureDevOpsIntegrationTestBase
             return;
         }
 
-        using var request = HttpRequestFactory.GetRepositoryRequest(Organization, repositoryId, Project);
+        using var request = Requests.GetRepositoryRequest(Organization, repositoryId, Project);
         AddAuthorizationForAzureDevOps(request);
 
         var response = await Client.GetGitRepositoryAsync(client, request, TestContext.CancellationToken);
@@ -116,7 +116,7 @@ public sealed class GitRepositoryTests : AzureDevOpsIntegrationTestBase
     public async Task FetchRefsAsync()
     {
         using var client = new HttpClient();
-        using var listRepositoriesRequest = HttpRequestFactory.ListRepositoriesRequest(Organization, Project);
+        using var listRepositoriesRequest = Requests.ListRepositoriesRequest(Organization, Project);
         AddAuthorizationForAzureDevOps(listRepositoriesRequest);
 
         var repositories = await Client.ListGitRepositoriesAsync(
@@ -135,7 +135,7 @@ public sealed class GitRepositoryTests : AzureDevOpsIntegrationTestBase
             return;
         }
 
-        using var request = HttpRequestFactory.ListRefsRequest(
+        using var request = Requests.ListRefsRequest(
             Organization,
             repositoryId,
             Project,
@@ -181,7 +181,7 @@ public sealed class GitRepositoryTests : AzureDevOpsIntegrationTestBase
     [TestCategory("Integration")]
     public async Task UpdateRefAsync()
     {
-        using var request = HttpRequestFactory.UpdateRefRequest(
+        using var request = Requests.UpdateRefRequest(
             Organization,
             "repository-id",
             "refs/heads/example",
@@ -209,7 +209,7 @@ public sealed class GitRepositoryTests : AzureDevOpsIntegrationTestBase
     [TestCategory("Integration")]
     public async Task UpdateRefsAsync()
     {
-        using var request = HttpRequestFactory.UpdateRefsRequest(
+        using var request = Requests.UpdateRefsRequest(
             Organization,
             "repository-id",
             [new GitRefUpdate

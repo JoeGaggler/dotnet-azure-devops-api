@@ -7,7 +7,7 @@ public sealed class BuildTests : AzureDevOpsIntegrationTestBase
     [TestCategory("Integration")]
     public async Task FetchBuildsAsync()
     {
-        using var request = HttpRequestFactory.ListBuildsRequest(
+        using var request = Requests.ListBuildsRequest(
             Organization,
             Project,
             top: 5,
@@ -57,7 +57,7 @@ public sealed class BuildTests : AzureDevOpsIntegrationTestBase
     public async Task FetchNextPageOfCompletedBuildsAsync()
     {
         using var client = new HttpClient();
-        using var firstRequest = HttpRequestFactory.ListBuildsRequest(
+        using var firstRequest = Requests.ListBuildsRequest(
             Organization,
             Project,
             top: 1,
@@ -79,7 +79,7 @@ public sealed class BuildTests : AzureDevOpsIntegrationTestBase
         Assert.AreEqual("completed", firstBuild.Status);
         Assert.IsFalse(string.IsNullOrEmpty(firstResponse.Value.ContinuationToken));
 
-        using var nextRequest = HttpRequestFactory.ListBuildsRequest(
+        using var nextRequest = Requests.ListBuildsRequest(
             Organization,
             Project,
             top: 1,
@@ -104,7 +104,7 @@ public sealed class BuildTests : AzureDevOpsIntegrationTestBase
     public async Task FetchBuildAsync()
     {
         using var client = new HttpClient();
-        using var listRequest = HttpRequestFactory.ListBuildsRequest(
+        using var listRequest = Requests.ListBuildsRequest(
             Organization,
             Project,
             top: 5,
@@ -124,7 +124,7 @@ public sealed class BuildTests : AzureDevOpsIntegrationTestBase
             return;
         }
 
-        using var request = HttpRequestFactory.GetBuildRequest(Organization, Project, buildId.Value);
+        using var request = Requests.GetBuildRequest(Organization, Project, buildId.Value);
         AddAuthorizationForAzureDevOps(request);
 
         var response = await Client.GetBuildAsync(client, request, TestContext.CancellationToken);

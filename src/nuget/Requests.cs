@@ -2,7 +2,7 @@ using System.Globalization;
 
 namespace Pingmint.AzureDevOps;
 
-public static class HttpRequestFactory
+public static class Requests
 {
     private const string ExtensionDataApiVersion = "7.2-preview.1";
 

@@ -9,7 +9,7 @@ public sealed class GitMergeTests : AzureDevOpsIntegrationTestBase
     [TestCategory("Integration")]
     public void GetMergeAsync()
     {
-        using var request = HttpRequestFactory.GetMergeRequest(
+        using var request = Requests.GetMergeRequest(
             Organization,
             Project,
             "repository",
@@ -44,7 +44,7 @@ public sealed class GitMergeTests : AzureDevOpsIntegrationTestBase
     [TestCategory("Integration")]
     public async Task CreateMergeAsync()
     {
-        using var request = HttpRequestFactory.CreateMergeRequest(
+        using var request = Requests.CreateMergeRequest(
             "organization",
             "project",
             "repository",

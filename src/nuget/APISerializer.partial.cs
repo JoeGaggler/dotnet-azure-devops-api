@@ -47,7 +47,12 @@ partial class APISerializer
         }
         catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
         {
-            status = DeserializationStatus.Failure;
+            return new DeserializationResult<BuildsResponse>
+            {
+                Status = DeserializationStatus.Exception,
+                Value = result,
+                Exception = exception,
+            };
         }
 
         return new DeserializationResult<BuildsResponse>
@@ -91,9 +96,14 @@ partial class APISerializer
                     : DeserializationStatus.Success;
             }
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        catch (Exception exception)
         {
-            status = DeserializationStatus.Failure;
+            return new DeserializationResult<Build>
+            {
+                Status = DeserializationStatus.Exception,
+                Value = result,
+                Exception = exception,
+            };
         }
 
         return new DeserializationResult<Build>
@@ -137,9 +147,14 @@ partial class APISerializer
                     : DeserializationStatus.Success;
             }
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        catch (Exception exception)
         {
-            status = DeserializationStatus.Failure;
+            return new DeserializationResult<GitRef>
+            {
+                Status = DeserializationStatus.Exception,
+                Value = result,
+                Exception = exception,
+            };
         }
 
         return new DeserializationResult<GitRef>
@@ -183,9 +198,14 @@ partial class APISerializer
                     : DeserializationStatus.Success;
             }
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        catch (Exception exception)
         {
-            status = DeserializationStatus.Failure;
+            return new DeserializationResult<GitRefsResponse>
+            {
+                Status = DeserializationStatus.Exception,
+                Value = result,
+                Exception = exception,
+            };
         }
 
         return new DeserializationResult<GitRefsResponse>
@@ -229,9 +249,14 @@ partial class APISerializer
                     : DeserializationStatus.Success;
             }
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        catch (Exception exception)
         {
-            status = DeserializationStatus.Failure;
+            return new DeserializationResult<GitRefUpdateResultsResponse>
+            {
+                Status = DeserializationStatus.Exception,
+                Value = result,
+                Exception = exception,
+            };
         }
 
         return new DeserializationResult<GitRefUpdateResultsResponse>
@@ -275,9 +300,14 @@ partial class APISerializer
                     : DeserializationStatus.Success;
             }
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        catch (Exception exception)
         {
-            status = DeserializationStatus.Failure;
+            return new DeserializationResult<GitRepositoriesResponse>
+            {
+                Status = DeserializationStatus.Exception,
+                Value = result,
+                Exception = exception,
+            };
         }
 
         return new DeserializationResult<GitRepositoriesResponse>
@@ -321,9 +351,14 @@ partial class APISerializer
                     : DeserializationStatus.Success;
             }
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        catch (Exception exception)
         {
-            status = DeserializationStatus.Failure;
+            return new DeserializationResult<GitRepository>
+            {
+                Status = DeserializationStatus.Exception,
+                Value = result,
+                Exception = exception,
+            };
         }
 
         return new DeserializationResult<GitRepository>
@@ -367,9 +402,14 @@ partial class APISerializer
                     : DeserializationStatus.Success;
             }
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        catch (Exception exception)
         {
-            status = DeserializationStatus.Failure;
+            return new DeserializationResult<GitPullRequest>
+            {
+                Status = DeserializationStatus.Exception,
+                Value = result,
+                Exception = exception,
+            };
         }
 
         return new DeserializationResult<GitPullRequest>
@@ -413,9 +453,14 @@ partial class APISerializer
                     : DeserializationStatus.Success;
             }
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        catch (Exception exception)
         {
-            status = DeserializationStatus.Failure;
+            return new DeserializationResult<GitPullRequestsResponse>
+            {
+                Status = DeserializationStatus.Exception,
+                Value = result,
+                Exception = exception,
+            };
         }
 
         return new DeserializationResult<GitPullRequestsResponse>
@@ -459,9 +504,14 @@ partial class APISerializer
                     : DeserializationStatus.Success;
             }
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        catch (Exception exception)
         {
-            status = DeserializationStatus.Failure;
+            return new DeserializationResult<GitPullRequestStatusesResponse>
+            {
+                Status = DeserializationStatus.Exception,
+                Value = result,
+                Exception = exception,
+            };
         }
 
         return new DeserializationResult<GitPullRequestStatusesResponse>
@@ -505,9 +555,14 @@ partial class APISerializer
                     : DeserializationStatus.Success;
             }
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        catch (Exception exception)
         {
-            status = DeserializationStatus.Failure;
+            return new DeserializationResult<GitPullRequestStatus>
+            {
+                Status = DeserializationStatus.Exception,
+                Value = result,
+                Exception = exception,
+            };
         }
 
         return new DeserializationResult<GitPullRequestStatus>
@@ -551,9 +606,14 @@ partial class APISerializer
                     : DeserializationStatus.Success;
             }
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        catch (Exception exception)
         {
-            status = DeserializationStatus.Failure;
+            return new DeserializationResult<GitMerge>
+            {
+                Status = DeserializationStatus.Exception,
+                Value = result,
+                Exception = exception,
+            };
         }
 
         return new DeserializationResult<GitMerge>
@@ -602,9 +662,14 @@ partial class APISerializer
                 }
             }
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        catch (Exception exception)
         {
-            status = DeserializationStatus.Failure;
+            return new DeserializationResult<ExtensionDataDocumentResponse>
+            {
+                Status = DeserializationStatus.Exception,
+                Value = new ExtensionDataDocumentResponse(result, System.Text.Encoding.UTF8.GetString(json)),
+                Exception = exception,
+            };
         }
 
         return new DeserializationResult<ExtensionDataDocumentResponse>
@@ -650,9 +715,14 @@ partial class APISerializer
                     : DeserializationStatus.Success;
             }
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        catch (Exception exception)
         {
-            status = DeserializationStatus.Failure;
+            return new DeserializationResult<ExtensionDataDocumentsResponse>
+            {
+                Status = DeserializationStatus.Exception,
+                Value = new ExtensionDataDocumentsResponse(documents, System.Text.Encoding.UTF8.GetString(json)),
+                Exception = exception,
+            };
         }
 
         return new DeserializationResult<ExtensionDataDocumentsResponse>
@@ -672,12 +742,14 @@ public record struct DeserializationResult<T>
 {
     public DeserializationStatus Status { get; init; }
     public T Value { get; init; }
+    public Exception? Exception { get; init; }
 }
 
 public enum DeserializationStatus
 {
     None,
     Success,
+    Exception,
     Failure,
     ModelValidationFailure
 }

@@ -16,7 +16,7 @@ public sealed class APISerializerTests
     [TestMethod]
     public void GetExtensionDataDocumentRequestEscapesRouteValuesAndUsesDocumentedVersion()
     {
-        using var request = HttpRequestFactory.GetExtensionDataDocumentRequest(
+        using var request = Requests.GetExtensionDataDocumentRequest(
             "org name",
             "publisher name",
             "extension/name",
@@ -28,7 +28,7 @@ public sealed class APISerializerTests
             "https://extmgmt.dev.azure.com/org%20name/_apis/ExtensionManagement/InstalledExtensions/publisher%20name/extension%2Fname/Data/Scopes/Default/Current/Collections/collection%20%26%20name/Documents/document%2Fid?api-version=7.2-preview.1",
             request.RequestUri!.AbsoluteUri);
 
-        using var userScopedRequest = HttpRequestFactory.GetExtensionDataDocumentRequest(
+        using var userScopedRequest = Requests.GetExtensionDataDocumentRequest(
             "organization", "publisher", "extension", "collection", "document-id", "User", "Me");
         StringAssert.Contains(userScopedRequest.RequestUri!.AbsoluteUri, "/Scopes/User/Me/");
     }
@@ -36,11 +36,11 @@ public sealed class APISerializerTests
     [TestMethod]
     public async Task ExtensionDataDocumentMutationRequestsPreserveEtagAndUseDocumentedMethods()
     {
-        using var createRequest = HttpRequestFactory.CreateExtensionDataDocumentRequest(
+        using var createRequest = Requests.CreateExtensionDataDocumentRequest(
             "organization", "publisher", "extension", "collection", "{\"id\":\"new-document\",\"name\":\"created\"}");
-        using var setRequest = HttpRequestFactory.SetExtensionDataDocumentRequest(
+        using var setRequest = Requests.SetExtensionDataDocumentRequest(
             "organization", "publisher", "extension", "collection", "{\"id\":\"set-document\",\"__etag\":-1,\"name\":\"set\"}");
-        using var updateRequest = HttpRequestFactory.UpdateExtensionDataDocumentRequest(
+        using var updateRequest = Requests.UpdateExtensionDataDocumentRequest(
             "organization", "publisher", "extension", "collection", "{\"id\":\"update-document\",\"__etag\":17,\"name\":\"updated\"}",
             scopeType: "User", scopeValue: "Me");
 
@@ -66,9 +66,9 @@ public sealed class APISerializerTests
     [TestMethod]
     public void ExtensionDataDocumentDeleteAndGetAllRequestsUseCollectionRoutes()
     {
-        using var deleteRequest = HttpRequestFactory.DeleteExtensionDataDocumentRequest(
+        using var deleteRequest = Requests.DeleteExtensionDataDocumentRequest(
             "organization", "publisher", "extension", "collection", "document-id");
-        using var getAllRequest = HttpRequestFactory.GetExtensionDataDocumentsRequest(
+        using var getAllRequest = Requests.GetExtensionDataDocumentsRequest(
             "organization", "publisher", "extension", "collection");
 
         Assert.AreEqual(HttpMethod.Delete, deleteRequest.Method);
@@ -112,9 +112,9 @@ public sealed class APISerializerTests
         var missingId = APISerializer.DeserializeExtensionDataDocument("{\"__etag\":1}"u8);
         var missingETag = APISerializer.DeserializeExtensionDataDocument("{\"id\":\"document-id\"}"u8);
 
-        Assert.AreEqual(DeserializationStatus.Failure, empty.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, empty.Status);
         Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
-        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, malformed.Status);
         Assert.AreEqual(DeserializationStatus.ModelValidationFailure, missingId.Status);
         Assert.AreEqual(DeserializationStatus.ModelValidationFailure, missingETag.Status);
     }
@@ -124,7 +124,7 @@ public sealed class APISerializerTests
     {
         using var client = new HttpClient(new ExtensionDataDocumentResponseHandler(
             "{\"id\":\"document-id\",\"__etag\":1,\"kind\":\"document\"}"));
-        using var request = HttpRequestFactory.GetExtensionDataDocumentRequest(
+        using var request = Requests.GetExtensionDataDocumentRequest(
             "organization", "publisher", "extension", "collection", "document-id");
 
         var result = await Client.GetExtensionDataDocumentAsync(client, request, CancellationToken.None);
@@ -153,7 +153,7 @@ public sealed class APISerializerTests
         var missingDocumentFields = APISerializer.DeserializeExtensionDataDocuments("[{}]"u8);
         var malformed = APISerializer.DeserializeExtensionDataDocuments("[{]"u8);
         Assert.AreEqual(DeserializationStatus.ModelValidationFailure, missingDocumentFields.Status);
-        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, malformed.Status);
     }
 
     [TestMethod]
@@ -164,13 +164,13 @@ public sealed class APISerializerTests
             singleDocument,
             System.Net.HttpStatusCode.Created));
         using var client = new HttpClient(new ExtensionDataDocumentResponseHandler(singleDocument));
-        using var createRequest = HttpRequestFactory.CreateExtensionDataDocumentRequest(
+        using var createRequest = Requests.CreateExtensionDataDocumentRequest(
             "organization", "publisher", "extension", "collection", "{\"id\":\"document-id\",\"__etag\":-1}");
-        using var setRequest = HttpRequestFactory.SetExtensionDataDocumentRequest(
+        using var setRequest = Requests.SetExtensionDataDocumentRequest(
             "organization", "publisher", "extension", "collection", "{\"id\":\"document-id\",\"__etag\":-1}");
-        using var updateRequest = HttpRequestFactory.UpdateExtensionDataDocumentRequest(
+        using var updateRequest = Requests.UpdateExtensionDataDocumentRequest(
             "organization", "publisher", "extension", "collection", "{\"id\":\"document-id\",\"__etag\":-1}");
-        using var deleteRequest = HttpRequestFactory.DeleteExtensionDataDocumentRequest(
+        using var deleteRequest = Requests.DeleteExtensionDataDocumentRequest(
             "organization", "publisher", "extension", "collection", "document-id");
 
         var created = await Client.CreateExtensionDataDocumentAsync(createdClient, createRequest, CancellationToken.None);
@@ -187,7 +187,7 @@ public sealed class APISerializerTests
 
         using var listClient = new HttpClient(new ExtensionDataDocumentResponseHandler(
             "[{\"id\":\"document-id\",\"__etag\":8,\"kind\":\"document\"}]"));
-        using var getAllRequest = HttpRequestFactory.GetExtensionDataDocumentsRequest(
+        using var getAllRequest = Requests.GetExtensionDataDocumentsRequest(
             "organization", "publisher", "extension", "collection");
         var documents = await Client.GetExtensionDataDocumentsAsync(listClient, getAllRequest, CancellationToken.None);
 
@@ -216,7 +216,7 @@ public sealed class APISerializerTests
         var malformed = APISerializer.DeserializeBuildsResponse("{\"value\":"u8);
 
         Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
-        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, malformed.Status);
     }
 
     [TestMethod]
@@ -253,9 +253,9 @@ public sealed class APISerializerTests
         var invalidRoot = APISerializer.DeserializeBuild("[]"u8);
         var malformed = APISerializer.DeserializeBuild("{\"id\":"u8);
 
-        Assert.AreEqual(DeserializationStatus.Failure, empty.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, empty.Status);
         Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
-        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, malformed.Status);
     }
 
     [TestMethod]
@@ -280,7 +280,7 @@ public sealed class APISerializerTests
     {
         var maxTime = new DateTimeOffset(2026, 10, 5, 12, 30, 0, TimeSpan.Zero);
         var minTime = new DateTimeOffset(2026, 10, 4, 12, 30, 0, TimeSpan.Zero);
-        using var request = HttpRequestFactory.ListBuildsRequest(
+        using var request = Requests.ListBuildsRequest(
             "org name",
             "project name",
             top: 25,
@@ -313,7 +313,7 @@ public sealed class APISerializerTests
     [TestMethod]
     public void ListBuildsRequestOmitsUnsetOptionalFilters()
     {
-        using var request = HttpRequestFactory.ListBuildsRequest("organization", "project");
+        using var request = Requests.ListBuildsRequest("organization", "project");
 
         Assert.AreEqual(
             "https://dev.azure.com/organization/project/_apis/build/builds?api-version=7.2-preview.8",
@@ -324,14 +324,14 @@ public sealed class APISerializerTests
     public async Task ListBuildsAsyncReturnsContinuationHeaderForNextRequest()
     {
         using var client = new HttpClient(new BuildResponseHandler("next +page"));
-        using var request = HttpRequestFactory.ListBuildsRequest("organization", "project", top: 1);
+        using var request = Requests.ListBuildsRequest("organization", "project", top: 1);
 
         var result = await Client.ListBuildsAsync(client, request, CancellationToken.None);
 
         Assert.AreEqual(ClientStatus.Success, result.Status);
         Assert.IsNotNull(result.Value.Response.Value);
         Assert.AreEqual("next +page", result.Value.ContinuationToken);
-        using var nextRequest = HttpRequestFactory.ListBuildsRequest("organization", "project", top: 1, continuationToken: result.Value.ContinuationToken);
+        using var nextRequest = Requests.ListBuildsRequest("organization", "project", top: 1, continuationToken: result.Value.ContinuationToken);
         StringAssert.Contains(nextRequest.RequestUri!.Query, "continuationToken=next%20%2Bpage");
     }
 
@@ -339,7 +339,7 @@ public sealed class APISerializerTests
     public async Task ListBuildsAsyncWithoutContinuationHeaderReturnsNullToken()
     {
         using var client = new HttpClient(new BuildResponseHandler(null));
-        using var request = HttpRequestFactory.ListBuildsRequest("organization", "project");
+        using var request = Requests.ListBuildsRequest("organization", "project");
 
         var result = await Client.ListBuildsAsync(client, request, CancellationToken.None);
 
@@ -365,7 +365,7 @@ public sealed class APISerializerTests
     [TestMethod]
     public void GetBuildRequestIncludesDocumentedRouteAndEscapesOptionalPropertyFilters()
     {
-        using var request = HttpRequestFactory.GetBuildRequest(
+        using var request = Requests.GetBuildRequest(
             "org name",
             "project name",
             42,
@@ -376,7 +376,7 @@ public sealed class APISerializerTests
             "https://dev.azure.com/org%20name/project%20name/_apis/build/builds/42?propertyFilters=tag%20one%26tag%2Ftwo&api-version=7.2-preview.8",
             request.RequestUri!.AbsoluteUri);
 
-        using var minimalRequest = HttpRequestFactory.GetBuildRequest("organization", "project", 7);
+        using var minimalRequest = Requests.GetBuildRequest("organization", "project", 7);
         Assert.AreEqual(
             "https://dev.azure.com/organization/project/_apis/build/builds/7?api-version=7.2-preview.8",
             minimalRequest.RequestUri!.AbsoluteUri);
@@ -405,7 +405,7 @@ public sealed class APISerializerTests
         var malformed = APISerializer.DeserializeGitRefsResponse("{\"value\":"u8);
 
         Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
-        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, malformed.Status);
     }
 
     [TestMethod]
@@ -431,7 +431,7 @@ public sealed class APISerializerTests
     [TestMethod]
     public void ListRefsRequestIncludesDocumentedOptionalParametersAndEscapesValues()
     {
-        using var request = HttpRequestFactory.ListRefsRequest(
+        using var request = Requests.ListRefsRequest(
             "org name",
             "repo/id",
             "project name",
@@ -454,7 +454,7 @@ public sealed class APISerializerTests
     [TestMethod]
     public void ListRefsRequestIncludesIncludeMyBranchesAndOmitsUnsetParameters()
     {
-        using var request = HttpRequestFactory.ListRefsRequest(
+        using var request = Requests.ListRefsRequest(
             "organization",
             "repository",
             includeMyBranches: true);
@@ -478,7 +478,7 @@ public sealed class APISerializerTests
         var malformed = APISerializer.DeserializeGitRef("{\"name\":"u8);
         var invalidRoot = APISerializer.DeserializeGitRef("[]"u8);
 
-        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, malformed.Status);
         Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
     }
 
@@ -498,7 +498,7 @@ public sealed class APISerializerTests
     [TestMethod]
     public async Task UpdateRefRequestIncludesDocumentedMethodUriAndBody()
     {
-        using var request = HttpRequestFactory.UpdateRefRequest(
+        using var request = Requests.UpdateRefRequest(
             "org name",
             "repo/id",
             "heads/main",
@@ -527,7 +527,7 @@ public sealed class APISerializerTests
         Assert.AreEqual("repository-id", body.RootElement.GetProperty("repositoryId").GetString());
         Assert.AreEqual(5, body.RootElement.EnumerateObject().Count());
 
-        using var minimalRequest = HttpRequestFactory.UpdateRefRequest(
+        using var minimalRequest = Requests.UpdateRefRequest(
             "organization",
             "repository",
             "heads/main",
@@ -540,7 +540,7 @@ public sealed class APISerializerTests
     [TestMethod]
     public async Task UpdateRefsRequestIncludesDocumentedMethodUriAndArrayBody()
     {
-        using var request = HttpRequestFactory.UpdateRefsRequest(
+        using var request = Requests.UpdateRefsRequest(
             "org name",
             "repo/id",
             [new GitRefUpdate
@@ -567,7 +567,7 @@ public sealed class APISerializerTests
         Assert.AreEqual("new-object-id", update.GetProperty("newObjectId").GetString());
         Assert.AreEqual(3, update.EnumerateObject().Count());
 
-        using var minimalRequest = HttpRequestFactory.UpdateRefsRequest(
+        using var minimalRequest = Requests.UpdateRefsRequest(
             "organization",
             "repository",
             [new GitRefUpdate { Name = "refs/heads/main" }]);
@@ -591,9 +591,9 @@ public sealed class APISerializerTests
         var invalidRoot = APISerializer.DeserializeGitRefUpdateResultsResponse("[]"u8);
         var malformed = APISerializer.DeserializeGitRefUpdateResultsResponse("{\"value\":"u8);
 
-        Assert.AreEqual(DeserializationStatus.Failure, empty.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, empty.Status);
         Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
-        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, malformed.Status);
     }
 
     [TestMethod]
@@ -630,13 +630,13 @@ public sealed class APISerializerTests
     {
         var result = APISerializer.DeserializeGitRepositoriesResponse("{\"value\":"u8);
 
-        Assert.AreEqual(DeserializationStatus.Failure, result.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, result.Status);
     }
 
     [TestMethod]
     public void ListRepositoriesRequestIncludesDocumentedOptionalParameters()
     {
-        using var request = HttpRequestFactory.ListRepositoriesRequest(
+        using var request = Requests.ListRepositoriesRequest(
             "org name",
             "project name",
             includeAllUrls: true,
@@ -652,7 +652,7 @@ public sealed class APISerializerTests
     [TestMethod]
     public void ListRepositoriesRequestOmitsUnsetOptionalParametersAndProject()
     {
-        using var request = HttpRequestFactory.ListRepositoriesRequest("organization");
+        using var request = Requests.ListRepositoriesRequest("organization");
 
         Assert.AreEqual(
             "https://dev.azure.com/organization/_apis/git/repositories?api-version=7.2-preview.2",
@@ -680,13 +680,13 @@ public sealed class APISerializerTests
     {
         var result = APISerializer.DeserializeGitRepository("{\"id\":"u8);
 
-        Assert.AreEqual(DeserializationStatus.Failure, result.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, result.Status);
     }
 
     [TestMethod]
     public void GetRepositoryRequestIncludesDocumentedUriAndOptionalProject()
     {
-        using var request = HttpRequestFactory.GetRepositoryRequest("org name", "repo/id", "project name");
+        using var request = Requests.GetRepositoryRequest("org name", "repo/id", "project name");
 
         Assert.AreEqual(HttpMethod.Get, request.Method);
         Assert.AreEqual(
@@ -707,13 +707,13 @@ public sealed class APISerializerTests
     {
         var result = APISerializer.DeserializeGitPullRequest("{\"pullRequestId\":"u8);
 
-        Assert.AreEqual(DeserializationStatus.Failure, result.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, result.Status);
     }
 
     [TestMethod]
     public void GetPullRequestByIdRequestIncludesDocumentedUriAndOptionalProject()
     {
-        using var request = HttpRequestFactory.GetPullRequestByIdRequest("org name", 42, "project name");
+        using var request = Requests.GetPullRequestByIdRequest("org name", 42, "project name");
 
         Assert.AreEqual(HttpMethod.Get, request.Method);
         Assert.AreEqual(
@@ -734,7 +734,7 @@ public sealed class APISerializerTests
     {
         var result = APISerializer.DeserializeGitPullRequestsResponse("{\"value\":"u8);
 
-        Assert.AreEqual(DeserializationStatus.Failure, result.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, result.Status);
     }
 
     [TestMethod]
@@ -748,7 +748,7 @@ public sealed class APISerializerTests
     [TestMethod]
     public void GetPullRequestsByProjectRequestEscapesOptionalQueryValues()
     {
-        using var request = HttpRequestFactory.GetPullRequestsByProjectRequest(
+        using var request = Requests.GetPullRequestsByProjectRequest(
             "org name",
             "project name",
             includeLinks: true,
@@ -775,7 +775,7 @@ public sealed class APISerializerTests
         var malformed = APISerializer.DeserializeGitPullRequestStatusesResponse("{\"value\":"u8);
         var invalidRoot = APISerializer.DeserializeGitPullRequestStatusesResponse("[]"u8);
 
-        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, malformed.Status);
         Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
     }
 
@@ -801,7 +801,7 @@ public sealed class APISerializerTests
     [TestMethod]
     public void GetPullRequestStatusesRequestIncludesDocumentedRoute()
     {
-        using var request = HttpRequestFactory.GetPullRequestStatusesRequest(
+        using var request = Requests.GetPullRequestStatusesRequest(
             "org name",
             "repo/id",
             42,
@@ -829,14 +829,14 @@ public sealed class APISerializerTests
         var malformed = APISerializer.DeserializeGitPullRequestStatus("{\"context\":{\"name\":"u8);
         var invalidRoot = APISerializer.DeserializeGitPullRequestStatus("[]"u8);
 
-        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, malformed.Status);
         Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
     }
 
     [TestMethod]
     public async Task CreatePullRequestStatusRequestIncludesDocumentedRouteAndBody()
     {
-        using var request = HttpRequestFactory.CreatePullRequestStatusRequest(
+        using var request = Requests.CreatePullRequestStatusRequest(
             "org name",
             "repo/id",
             42,
@@ -867,7 +867,7 @@ public sealed class APISerializerTests
     [TestMethod]
     public void DeletePullRequestStatusRequestIncludesDocumentedMethodAndRoute()
     {
-        using var request = HttpRequestFactory.DeletePullRequestStatusRequest(
+        using var request = Requests.DeletePullRequestStatusRequest(
             "org name",
             "repo/id",
             42,
@@ -906,9 +906,9 @@ public sealed class APISerializerTests
         var malformedRoot = APISerializer.DeserializeGitMerge("{"u8);
 
         Assert.AreEqual(DeserializationStatus.Failure, invalidRoot.Status);
-        Assert.AreEqual(DeserializationStatus.Failure, invalidProperty.Status);
-        Assert.AreEqual(DeserializationStatus.Failure, malformed.Status);
-        Assert.AreEqual(DeserializationStatus.Failure, malformedRoot.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, invalidProperty.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, malformed.Status);
+        Assert.AreEqual(DeserializationStatus.Exception, malformedRoot.Status);
     }
 
     [TestMethod]
@@ -928,7 +928,7 @@ public sealed class APISerializerTests
     [TestMethod]
     public async Task CreateMergeRequestIncludesDocumentedUriAndBody()
     {
-        using var request = HttpRequestFactory.CreateMergeRequest(
+        using var request = Requests.CreateMergeRequest(
             "org name",
             "project name",
             "repo/id",
@@ -951,7 +951,7 @@ public sealed class APISerializerTests
     [TestMethod]
     public void GetMergeRequestIncludesDocumentedUriAndOptionalQueryParameter()
     {
-        using var request = HttpRequestFactory.GetMergeRequest(
+        using var request = Requests.GetMergeRequest(
             "org name",
             "project name",
             "repo/id",
@@ -967,7 +967,7 @@ public sealed class APISerializerTests
     [TestMethod]
     public void GetMergeRequestOmitsUnsetOptionalQueryParameter()
     {
-        using var request = HttpRequestFactory.GetMergeRequest("organization", "project", "repository", 42);
+        using var request = Requests.GetMergeRequest("organization", "project", "repository", 42);
 
         Assert.AreEqual(
             "https://dev.azure.com/organization/project/_apis/git/repositories/repository/merges/42?api-version=7.2-preview.1",
